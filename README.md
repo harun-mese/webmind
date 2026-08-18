@@ -12,7 +12,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Görseller için orijinal oran, kare, rounded ve circle çerçeve seçenekleri
 - Öğe bazında None ve Borderless dahil farklı kart stilleri
 - İsteğe bağlı, tamamen silinebilen başlıklar ve satır/renk/kalın/altı çizili biçimlendirmeli rich text öğeleri
-- Stil ve seçim işlemlerinde video/ses/görsel öğelerini yeniden yüklemeyen, hareket sırasında frame-sınırlı canvas çizimi
+- Stil, seçim ve detay işlemlerinde iframe/video/harita/ses DOM'unu yerinde koruyan, hareket sırasında frame-sınırlı canvas çizimi
 - Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
 - Sade SVG kontrolleri, ilerleme çizgisi ve süre göstergeli özel ses oynatıcı

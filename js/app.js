@@ -127,7 +127,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   recordingDuration = 0,
   recordingStartedAt = 0,
   recordingTimer = null,
-  edgeFrame = null;
+  edgeFrame = null,
+  renderedMap = null;
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
   edgeRoot = $("#viewport-edges");
@@ -252,24 +253,19 @@ function renderSettings() {
 }
 function renderNodes() {
   nodeLayer.style.transform = currentTransform();
-  const retainedMedia = new Map(
-    $$(".mind-node", nodeLayer).flatMap((element) => {
-      const media = element.querySelector(".node-media");
-      return media && element.dataset.mediaSignature
-        ? [
-            [
-              element.dataset.id,
-              { media, signature: element.dataset.mediaSignature },
-            ],
-          ]
-        : [];
-    }),
+  const activeMap = map();
+  if (renderedMap !== activeMap) {
+    nodeLayer.innerHTML = "";
+    renderedMap = activeMap;
+  }
+  const existing = new Map(
+    $$(".mind-node", nodeLayer).map((element) => [element.dataset.id, element]),
   );
-  nodeLayer.innerHTML = "";
-  map().nodes.forEach((n) => {
-    const el = document.createElement("article");
+  const visibleIds = new Set();
+  activeMap.nodes.forEach((n) => {
+    visibleIds.add(n.id);
     const type = n.type || "text";
-    const style = n.style || map().appearance.itemStyles?.[type] || "soft";
+    const style = n.style || activeMap.appearance.itemStyles?.[type] || "soft";
     const hasColor = Boolean(n.color);
     const hasVisibleColor = hasColor && style !== "none";
     const nodeColor = hasVisibleColor ? n.color : "transparent";
@@ -278,44 +274,72 @@ function renderNodes() {
       : "var(--canvas-ink)";
     const playerInk = hasVisibleColor
       ? n.color
-      : readableInk(map().appearance.textColor || map().appearance.canvasColor);
+      : readableInk(
+          activeMap.appearance.textColor || activeMap.appearance.canvasColor,
+        );
+    const signature = mediaSignature(n);
+    let el = existing.get(n.id);
+    const isNew = !el;
+    if (isNew) {
+      el = document.createElement("article");
+      el.dataset.id = n.id;
+      el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><div class="node-subtitle"></div><button class="connector"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
+      el.addEventListener("pointerdown", onNodeDown);
+      el.addEventListener("click", (event) => {
+        event.stopPropagation();
+        selectNodeWithoutReplacingDraggedElement(el.dataset.id);
+      });
+      el.addEventListener("dblclick", (event) => {
+        event.stopPropagation();
+        const node = map().nodes.find((item) => item.id === el.dataset.id);
+        if (node) editTitle(el.querySelector(".node-title"), node);
+      });
+      el.querySelector(".connector").addEventListener(
+        "pointerdown",
+        (event) => {
+          const node = map().nodes.find((item) => item.id === el.dataset.id);
+          if (node) startConnection(event, node);
+        },
+      );
+      el.querySelector(".node-resize-handle")?.addEventListener(
+        "pointerdown",
+        (event) => {
+          const node = map().nodes.find((item) => item.id === el.dataset.id);
+          if (node) startResize(event, node, el);
+        },
+      );
+      nodeLayer.append(el);
+    } else if (el.dataset.mediaSignature !== signature) {
+      const currentMedia = el.querySelector(".node-media");
+      const template = document.createElement("template");
+      template.innerHTML = renderNodeMedia(n).trim();
+      const nextMedia = template.content.firstElementChild;
+      if (currentMedia && nextMedia) currentMedia.replaceWith(nextMedia);
+      else if (currentMedia) currentMedia.remove();
+      else if (nextMedia) el.insertBefore(nextMedia, el.firstChild);
+    }
     el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} layout-${n.layout || "media-title-subtitle"} ${hasVisibleColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
-    el.dataset.id = n.id;
-    el.dataset.mediaSignature = mediaSignature(n);
+    el.dataset.mediaSignature = signature;
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--player-ink:${playerInk};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
-    el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><div class="node-subtitle"></div><button class="connector" aria-label="${escapeAttribute(n.title || "Başlıksız öğe")} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
-    const retained = retainedMedia.get(n.id);
-    const freshMedia = el.querySelector(".node-media");
-    const reusedMedia = Boolean(
-      freshMedia && retained?.signature === el.dataset.mediaSignature,
-    );
-    if (reusedMedia) freshMedia.replaceWith(retained.media);
     const title = el.querySelector(".node-title");
-    if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
-    else title.textContent = n.title;
+    if (!title.isContentEditable) {
+      if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
+      else title.textContent = n.title;
+    }
     el.querySelector(".node-subtitle").textContent = n.subtitle || "";
-    el.addEventListener("pointerdown", onNodeDown);
-    el.addEventListener("click", (e) => {
-      e.stopPropagation();
-      selectNodeWithoutReplacingDraggedElement(n.id);
-    });
-    el.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
-      editTitle(title, n);
-    });
-    el.querySelector(".connector").addEventListener("pointerdown", (e) =>
-      startConnection(e, n),
-    );
-    el.querySelector(".node-resize-handle")?.addEventListener(
-      "pointerdown",
-      (e) => startResize(e, n, el),
-    );
-    nodeLayer.append(el);
-    if (!reusedMedia) bindMediaControls(el, n);
+    el.querySelector(".connector").ariaLabel =
+      `${n.title || "Başlıksız öğe"} öğesinden bağlantı oluştur`;
+    if (isNew || el.dataset.boundMediaSignature !== signature) {
+      bindMediaControls(el, n);
+      el.dataset.boundMediaSignature = signature;
+    }
     n.renderWidth = el.offsetWidth;
     n.renderHeight = el.offsetHeight;
   });
-  $("#empty-state").hidden = map().nodes.length > 0;
+  existing.forEach((element, id) => {
+    if (!visibleIds.has(id)) element.remove();
+  });
+  $("#empty-state").hidden = activeMap.nodes.length > 0;
 }
 function mediaSignature(node) {
   if (
