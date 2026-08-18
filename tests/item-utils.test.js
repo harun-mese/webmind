@@ -70,6 +70,10 @@ test("item sizes reflect their rich media layout", () => {
     width: 270,
     height: 125,
   });
+  assert.deepEqual(nodeDimensions({ type: "recording" }), {
+    width: 270,
+    height: 125,
+  });
   assert.deepEqual(nodeDimensions({ type: "text", width: 244, height: 74 }), {
     width: 244,
     height: 74,

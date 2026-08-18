@@ -85,6 +85,7 @@ const defaults = {
     website: "outline",
     map: "glass",
     music: "soft",
+    recording: "soft",
   },
 };
 const initialMap = () => ({
@@ -119,7 +120,13 @@ let state = { version: 1, activeMapId: null, maps: [] },
   resize = null,
   pendingItemPosition = null,
   activeTitleEditor = null,
-  savedTitleRange = null;
+  savedTitleRange = null,
+  audioRecorder = null,
+  recordingStream = null,
+  recordingDataUrl = null,
+  recordingDuration = 0,
+  recordingStartedAt = 0,
+  recordingTimer = null;
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
   edgeRoot = $("#viewport-edges");
@@ -293,6 +300,8 @@ function renderNodeMedia(node) {
   }
   if (node.type === "music" && node.mediaUrl)
     return `<div class="node-media music-card"><span class="music-art">♫</span><audio src="${escapeAttribute(node.mediaUrl)}" controls preload="metadata"></audio></div>`;
+  if (node.type === "recording" && node.mediaUrl)
+    return `<div class="node-media music-card recording-card"><span class="music-art">●</span><audio src="${escapeAttribute(node.mediaUrl)}" controls preload="metadata"></audio></div>`;
   if (node.type === "file")
     return `<div class="node-media file-card"><span class="file-card-icon">${fileIcon(node.fileType)}</span><span class="file-card-meta"><span class="file-card-name">${escapeHtml(node.fileName || "Dosya")}</span><span class="file-card-size">${formatBytes(node.fileSize || 0)}</span></span></div>`;
   return "";
@@ -603,7 +612,7 @@ function renderNote() {
       n.type === "youtube"
         ? `https://www.youtube.com/watch?v=${n.mediaUrl}`
         : attachmentUrl;
-    attachment.download = ["file", "music"].includes(n.type)
+    attachment.download = ["file", "music", "recording"].includes(n.type)
       ? n.fileName || "dosya"
       : "";
   }
@@ -815,6 +824,7 @@ function openItemDialog(position = null) {
       canvas.clientHeight / 2 + canvas.getBoundingClientRect().top,
     );
   $("#item-form").reset();
+  resetRecording();
   setItemType("text");
   $("#item-dialog").showModal();
   requestAnimationFrame(() => $("#item-title").focus());
@@ -828,6 +838,7 @@ function setItemType(type) {
   const needsFile = ["image", "file", "music"].includes(type);
   $("#item-url-field").hidden = !needsUrl;
   $("#item-file-field").hidden = !needsFile;
+  $("#recording-field").hidden = type !== "recording";
   $("#item-url").type = type === "map" ? "text" : "url";
   $("#item-url").placeholder =
     type === "youtube"
@@ -844,6 +855,83 @@ function setItemType(type) {
         ? "Bir müzik dosyası seç"
         : "Dosya seç veya buraya bırak";
 }
+function updateRecordingClock() {
+  const seconds = Math.floor((Date.now() - recordingStartedAt) / 1000);
+  recordingDuration = seconds;
+  $("#recording-time").textContent =
+    `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+function resetRecording() {
+  clearInterval(recordingTimer);
+  recordingTimer = null;
+  if (audioRecorder?.state === "recording") {
+    audioRecorder.onstop = null;
+    audioRecorder.stop();
+  }
+  recordingStream?.getTracks().forEach((track) => track.stop());
+  recordingStream = null;
+  audioRecorder = null;
+  recordingDataUrl = null;
+  recordingDuration = 0;
+  $("#recording-preview").hidden = true;
+  $("#recording-preview").removeAttribute("src");
+  $("#recording-status").textContent = "Kayda hazır";
+  $("#recording-time").textContent = "00:00";
+  $("#recording-dot").classList.remove("active");
+  $("#start-recording").disabled = false;
+  $("#stop-recording").disabled = true;
+}
+async function startAudioRecording() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    toast("Bu tarayıcı ses kaydını desteklemiyor.");
+    return;
+  }
+  try {
+    recordingStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
+    const chunks = [];
+    audioRecorder = new MediaRecorder(recordingStream);
+    audioRecorder.ondataavailable = (event) => {
+      if (event.data.size) chunks.push(event.data);
+    };
+    audioRecorder.onstop = async () => {
+      const blob = new Blob(chunks, {
+        type: audioRecorder.mimeType || "audio/webm",
+      });
+      recordingDataUrl = await readFileAsDataUrl(blob);
+      const preview = $("#recording-preview");
+      preview.src = recordingDataUrl;
+      preview.hidden = false;
+      $("#recording-status").textContent = "Kayıt hazır";
+      $("#recording-dot").classList.remove("active");
+      $("#start-recording").disabled = false;
+      recordingStream?.getTracks().forEach((track) => track.stop());
+      recordingStream = null;
+    };
+    audioRecorder.start();
+    recordingStartedAt = Date.now();
+    updateRecordingClock();
+    recordingTimer = setInterval(updateRecordingClock, 500);
+    $("#recording-status").textContent = "Kaydediliyor";
+    $("#recording-dot").classList.add("active");
+    $("#start-recording").disabled = true;
+    $("#stop-recording").disabled = false;
+  } catch {
+    toast("Mikrofon izni verilmedi veya mikrofon kullanılamıyor.");
+    resetRecording();
+  }
+}
+function stopAudioRecording() {
+  if (audioRecorder?.state !== "recording") return;
+  clearInterval(recordingTimer);
+  recordingTimer = null;
+  updateRecordingClock();
+  audioRecorder.stop();
+  $("#stop-recording").disabled = true;
+}
+$("#start-recording").onclick = startAudioRecording;
+$("#stop-recording").onclick = stopAudioRecording;
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -870,6 +958,7 @@ async function createItemFromDialog() {
           website: "Web sitesi",
           map: "Harita konumu",
           music: file?.name || "Müzik",
+          recording: "Ses kaydı",
         }[type],
       x: position.x - (type === "text" ? 78 : 115),
       y: position.y - 31,
@@ -901,10 +990,18 @@ async function createItemFromDialog() {
     if (!node.mapLocation)
       throw new Error("Geçerli bir enlem ve boylam gir: 41.0082, 28.9784");
   }
+  if (type === "recording") {
+    if (!recordingDataUrl) throw new Error("Önce bir ses kaydı oluştur.");
+    node.mediaUrl = recordingDataUrl;
+    node.fileName = `ses-kaydi-${new Date().toISOString().replaceAll(":", "-")}.webm`;
+    node.fileType = "audio/webm";
+    node.recordingDuration = recordingDuration;
+  }
   snapshot();
   map().nodes.push(node);
   selectedNodeId = node.id;
   $("#item-dialog").close();
+  recordingStream?.getTracks().forEach((track) => track.stop());
   renderAll();
   scheduleSave();
 }
@@ -914,6 +1011,7 @@ $$(".item-type").forEach(
 );
 $("#close-item-dialog").onclick = $("#cancel-item").onclick = () =>
   $("#item-dialog").close();
+$("#item-dialog").addEventListener("close", resetRecording);
 $("#item-form").onsubmit = async (event) => {
   event.preventDefault();
   try {

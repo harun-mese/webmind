@@ -2018,3 +2018,85 @@ body.sidebar-open .zoom-controls {
 .item-type-options {
   grid-template-columns: repeat(4, 1fr);
 }
+
+/* Voice recording and scroll-safe floating panels */
+.sidebar,
+.note-panel,
+.popover,
+.item-dialog form {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.popover {
+  max-height: calc(100vh - 88px);
+}
+.item-dialog {
+  max-height: min(720px, calc(100vh - 24px));
+}
+.item-dialog form {
+  max-height: min(720px, calc(100vh - 24px));
+}
+.recording-field {
+  margin-bottom: 17px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #faf6ee;
+}
+.recording-status {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+#recording-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #aaa39a;
+}
+#recording-dot.active {
+  background: #df5148;
+  box-shadow: 0 0 0 5px rgba(223, 81, 72, 0.13);
+  animation: recording-pulse 1.2s infinite;
+}
+.recording-status time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.recording-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.recording-actions button {
+  padding: 9px 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  font-size: 11px;
+}
+.recording-actions button:first-child:not(:disabled) {
+  border-color: #df837c;
+  color: #a9362f;
+}
+.recording-actions button:disabled {
+  opacity: 0.45;
+}
+#recording-preview {
+  width: 100%;
+  height: 38px;
+  margin-top: 12px;
+}
+.recording-card .music-art {
+  color: #b83e37;
+}
+@keyframes recording-pulse {
+  50% {
+    transform: scale(0.72);
+    opacity: 0.7;
+  }
+}

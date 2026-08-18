@@ -504,6 +504,18 @@
           <option value="solid">Dolu</option>
         </select></label
       >
+      <label
+        >Ses kayıtları<select data-style-group="recording">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">Şeffaf</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
       <label class="settings-check"
         ><input id="apply-group-existing" type="checkbox" checked /> Değişikliği
         mevcut grup öğelerine de uygula</label
@@ -647,6 +659,9 @@
           <button type="button" class="item-type" data-type="music">
             <span>♫</span><strong>Müzik</strong>
           </button>
+          <button type="button" class="item-type" data-type="recording">
+            <span>●</span><strong>Ses kaydı</strong>
+          </button>
         </div>
         <input id="item-type" type="hidden" value="text" />
         <label class="dialog-field"
@@ -666,6 +681,20 @@
           <small>Görseller ve küçük dosyalar cihazında saklanır.</small>
           <input id="item-file" type="file" />
         </label>
+        <div id="recording-field" class="recording-field" hidden>
+          <div class="recording-status">
+            <span id="recording-dot"></span
+            ><strong id="recording-status">Kayda hazır</strong
+            ><time id="recording-time">00:00</time>
+          </div>
+          <div class="recording-actions">
+            <button id="start-recording" type="button">Kaydı başlat</button>
+            <button id="stop-recording" type="button" disabled>
+              Kaydı bitir
+            </button>
+          </div>
+          <audio id="recording-preview" controls hidden></audio>
+        </div>
         <div class="dialog-actions">
           <button type="button" id="cancel-item" class="button">Vazgeç</button>
           <button type="submit" class="button primary-button">

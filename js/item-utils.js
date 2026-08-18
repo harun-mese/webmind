@@ -18,6 +18,7 @@ export function nodeDimensions(node) {
   if (node.type === "website") return { width: 260, height: 125 };
   if (node.type === "map") return { width: 280, height: 220 };
   if (node.type === "music") return { width: 270, height: 125 };
+  if (node.type === "recording") return { width: 270, height: 125 };
   return { width: 156, height: 62 };
 }
 
