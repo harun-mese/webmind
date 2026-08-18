@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f8f3e7" />
+    <meta
+      name="description"
+      content="Çevrimdışı çalışan, sade zihin haritası ve not uygulaması."
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Indie+Flower&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>WebMind</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="WebMind ana sayfa"
+          ><span class="brand-mark">W</span><span>webmind</span></a
+        >
+        <div class="map-title-wrap">
+          <input
+            id="map-title"
+            class="map-title"
+            value="İlk Haritam"
+            aria-label="Harita adı"
+            maxlength="80"
+          />
+          <span id="save-state" class="save-state" aria-live="polite"
+            ><span class="status-dot"></span> Kaydedildi</span
+          >
+        </div>
+        <nav class="toolbar" aria-label="Harita araçları">
+          <button
+            id="undo-btn"
+            class="icon-button"
+            title="Geri al (Ctrl+Z)"
+            aria-label="Geri al"
+          >
+            ↶
+          </button>
+          <button
+            id="redo-btn"
+            class="icon-button"
+            title="İleri al (Ctrl+Shift+Z)"
+            aria-label="İleri al"
+          >
+            ↷
+          </button>
+          <button
+            id="fit-btn"
+            class="icon-button"
+            title="Haritayı ekrana sığdır"
+            aria-label="Haritayı ekrana sığdır"
+          >
+            ⌗
+          </button>
+          <button id="appearance-btn" class="button">
+            <span>◐</span> Görünüm
+          </button>
+          <button
+            id="export-btn"
+            class="icon-button"
+            title="JSON olarak dışa aktar"
+            aria-label="Dışa aktar"
+          >
+            ⇩
+          </button>
+          <label
+            class="icon-button file-label"
+            title="JSON dosyasından içe aktar"
+            aria-label="İçe aktar"
+            >⇧<input
+              id="import-input"
+              type="file"
+              accept="application/json,.json"
+          /></label>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Haritalar">
+          <div class="sidebar-heading">
+            <span>Haritalarım</span
+            ><button
+              id="new-map-btn"
+              class="small-add"
+              title="Yeni harita"
+              aria-label="Yeni harita"
+            >
+              +
+            </button>
+          </div>
+          <div id="map-list" class="map-list"></div>
+          <div class="sidebar-tip">
+            <span>✦</span>
+            <p>Tuvalde boş bir alana çift tıklayarak yeni bir fikir ekle.</p>
+          </div>
+        </aside>
+
+        <section class="canvas-shell" aria-label="Zihin haritası çalışma alanı">
+          <div id="canvas" class="canvas pattern-dots" tabindex="0">
+            <svg
+              id="edge-layer"
+              class="edge-layer"
+              aria-label="Düğüm bağlantıları"
+            >
+              <defs>
+                <marker
+                  id="arrow-end"
+                  markerWidth="9"
+                  markerHeight="9"
+                  refX="8"
+                  refY="4.5"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <path
+                    d="M1,1 L8,4.5 L1,8"
+                    fill="none"
+                    stroke="context-stroke"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </marker>
+                <marker
+                  id="arrow-start"
+                  markerWidth="9"
+                  markerHeight="9"
+                  refX="1"
+                  refY="4.5"
+                  orient="auto-start-reverse"
+                  markerUnits="strokeWidth"
+                >
+                  <path
+                    d="M8,1 L1,4.5 L8,8"
+                    fill="none"
+                    stroke="context-stroke"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </marker>
+              </defs>
+              <g id="viewport-edges"></g>
+            </svg>
+            <div id="node-layer" class="node-layer"></div>
+            <div id="empty-state" class="empty-state" hidden>
+              <span class="empty-icon">✦</span><strong>İlk fikrini ekle</strong
+              ><span>Tuvalde herhangi bir yere çift tıkla</span>
+            </div>
+          </div>
+          <div class="zoom-controls" aria-label="Yakınlaştırma kontrolleri">
+            <button id="zoom-out" aria-label="Uzaklaştır">−</button
+            ><span id="zoom-value">100%</span
+            ><button id="zoom-in" aria-label="Yakınlaştır">+</button>
+          </div>
+          <div class="canvas-hint">
+            Çift tıkla: yeni fikir · Sürükle: taşı · Noktadan sürükle: bağla
+          </div>
+        </section>
+
+        <aside id="note-panel" class="note-panel" aria-label="Düğüm notları">
+          <div class="note-empty">
+            <div>✎</div>
+            <strong>Bir fikir seç</strong>
+            <p>Notlarını düzenlemek için haritadaki bir öğeye tıkla.</p>
+          </div>
+          <div class="note-content" hidden>
+            <div class="panel-heading">
+              <span>Fikir detayları</span
+              ><button
+                id="close-note"
+                class="icon-button"
+                aria-label="Not panelini kapat"
+              >
+                ×
+              </button>
+            </div>
+            <label>Başlık<input id="note-title" maxlength="100" /></label>
+            <label
+              >Not<textarea
+                id="note-text"
+                rows="10"
+                placeholder="Aklındakileri buraya yaz..."
+              ></textarea>
+            </label>
+            <label
+              >Etiketler<input
+                id="note-tags"
+                placeholder="fikir, araştırma, önemli"
+            /></label>
+            <div class="color-row">
+              <span>Fikir rengi</span>
+              <div id="node-colors" class="color-swatches"></div>
+            </div>
+            <button id="delete-node" class="danger-button">Fikri sil</button>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="appearance-popover" class="popover appearance-popover" hidden>
+      <div class="popover-title">
+        <strong>Tuval görünümü</strong
+        ><button class="popover-close" aria-label="Kapat">×</button>
+      </div>
+      <label>Arka plan rengi<input id="canvas-color" type="color" /></label>
+      <label>Desen rengi<input id="pattern-color" type="color" /></label>
+      <fieldset>
+        <legend>Desen</legend>
+        <div id="pattern-options" class="segmented">
+          <button data-pattern="dots">Nokta</button
+          ><button data-pattern="grid">Kare</button
+          ><button data-pattern="lines">Çizgi</button
+          ><button data-pattern="none">Boş</button>
+        </div>
+      </fieldset>
+      <label
+        >Desen aralığı <output id="spacing-output">24px</output
+        ><input id="pattern-spacing" type="range" min="12" max="48" step="2"
+      /></label>
+      <hr />
+      <label>Varsayılan ok rengi<input id="arrow-color" type="color" /></label>
+    </div>
+
+    <div id="edge-popover" class="popover edge-popover" hidden>
+      <div class="popover-title">
+        <strong>Bağlantı</strong
+        ><button class="popover-close" aria-label="Kapat">×</button>
+      </div>
+      <label
+        >Etiket<input id="edge-label" placeholder="örn. destekler"
+      /></label>
+      <fieldset>
+        <legend>Yön</legend>
+        <div id="edge-direction" class="segmented">
+          <button data-direction="none">—</button
+          ><button data-direction="forward">→</button
+          ><button data-direction="backward">←</button
+          ><button data-direction="both">↔</button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Çizgi</legend>
+        <div id="edge-line-style" class="segmented">
+          <button data-style="solid">Düz</button
+          ><button data-style="dashed">Kesik</button
+          ><button data-style="dotted">Nokta</button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Form</legend>
+        <div id="edge-path-style" class="segmented">
+          <button data-path="curved">Kavis</button
+          ><button data-path="straight">Doğru</button
+          ><button data-path="elbow">Dirsek</button>
+        </div>
+      </fieldset>
+      <label>Ok rengi<input id="edge-color" type="color" /></label>
+      <button id="delete-edge" class="danger-button">Bağlantıyı sil</button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
