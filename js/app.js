@@ -129,7 +129,9 @@ let state = { version: 1, activeMapId: null, maps: [] },
   recordingTimer = null,
   edgeFrame = null,
   renderedMap = null,
-  suppressNodeClick = null;
+  suppressNodeClick = null,
+  pinch = null;
+const touchPoints = new Map();
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
   edgeRoot = $("#viewport-edges");
@@ -895,6 +897,24 @@ canvas.addEventListener("dblclick", (e) => {
 });
 canvas.addEventListener("pointerdown", (e) => {
   if (e.target !== canvas) return;
+  if (e.pointerType === "touch") {
+    touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touchPoints.size === 2) {
+      const [first, second] = [...touchPoints.values()];
+      const midpoint = {
+        x: (first.x + second.x) / 2,
+        y: (first.y + second.y) / 2,
+      };
+      pinch = {
+        distance: Math.hypot(second.x - first.x, second.y - first.y),
+        zoom: map().viewport.zoom,
+        world: screenToWorld(midpoint.x, midpoint.y),
+      };
+      pan = null;
+      canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+  }
   selectedNodeId = selectedEdgeId = null;
   $("#edge-popover").hidden = true;
   $$(".mind-node").forEach((node) => node.classList.remove("selected"));
@@ -909,6 +929,27 @@ canvas.addEventListener("pointerdown", (e) => {
   canvas.setPointerCapture(e.pointerId);
 });
 window.addEventListener("pointermove", (e) => {
+  if (e.pointerType === "touch" && touchPoints.has(e.pointerId)) {
+    touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && touchPoints.size >= 2) {
+      const [first, second] = [...touchPoints.values()];
+      const distance = Math.hypot(second.x - first.x, second.y - first.y);
+      const midpoint = {
+        x: (first.x + second.x) / 2,
+        y: (first.y + second.y) / 2,
+      };
+      const rect = canvas.getBoundingClientRect();
+      const viewport = map().viewport;
+      viewport.zoom = Math.min(
+        1.8,
+        Math.max(0.45, pinch.zoom * (distance / Math.max(1, pinch.distance))),
+      );
+      viewport.x = midpoint.x - rect.left - pinch.world.x * viewport.zoom;
+      viewport.y = midpoint.y - rect.top - pinch.world.y * viewport.zoom;
+      renderViewport();
+      return;
+    }
+  }
   if (resize) {
     const node = map().nodes.find((item) => item.id === resize.id);
     const width = Math.min(
@@ -952,6 +993,14 @@ window.addEventListener("pointermove", (e) => {
   }
 });
 window.addEventListener("pointerup", (e) => {
+  if (e.pointerType === "touch") {
+    touchPoints.delete(e.pointerId);
+    if (touchPoints.size < 2 && pinch) {
+      pinch = null;
+      pan = null;
+      scheduleSave();
+    }
+  }
   if (resize) {
     resize = null;
     scheduleSave();
@@ -994,6 +1043,12 @@ window.addEventListener("pointerup", (e) => {
     pan = null;
     scheduleSave();
   }
+});
+window.addEventListener("pointercancel", (event) => {
+  if (event.pointerType !== "touch") return;
+  touchPoints.delete(event.pointerId);
+  if (touchPoints.size < 2) pinch = null;
+  pan = null;
 });
 canvas.addEventListener(
   "wheel",

@@ -2599,3 +2599,18 @@ body.sidebar-open .zoom-controls {
     height: 38px;
   }
 }
+
+/* Mobile interaction fixes */
+.edge-layer {
+  color: var(--arrow);
+}
+@media (max-width: 700px) {
+  .item-dialog .dialog-actions .button {
+    display: inline-flex;
+    width: auto;
+    min-width: 96px;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}

@@ -16,6 +16,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
 - Yalnızca gerçek tıklamada açılan detay paneli ve panelden düzenlenebilen harici öğe bağlantıları
 - Mobilde tam yükseklik harita drawer’ı ve seçili öğedeki More düğmesinden açılan bottom sheet detayları
+- Mobil canvas üzerinde iki parmakla merkeze sabit pinch-to-zoom desteği
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
 - Sade SVG kontrolleri, ilerleme çizgisi ve süre göstergeli özel ses oynatıcı
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli
