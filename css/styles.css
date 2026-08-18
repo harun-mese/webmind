@@ -2172,3 +2172,12 @@ body.sidebar-open .zoom-controls {
 .audio-duration {
   white-space: nowrap;
 }
+
+/* Theme text always follows the active canvas contrast color. */
+.canvas {
+  color: var(--canvas-ink, var(--ink));
+}
+.mind-node.style-none,
+.mind-node.no-color {
+  color: var(--canvas-ink, var(--ink));
+}

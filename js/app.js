@@ -250,9 +250,12 @@ function renderNodes() {
     const type = n.type || "text";
     const style = n.style || map().appearance.itemStyles?.[type] || "soft";
     const hasColor = Boolean(n.color);
-    const nodeColor = n.color || "transparent";
-    const nodeText = hasColor ? readableInk(n.color) : "var(--canvas-ink)";
-    el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
+    const hasVisibleColor = hasColor && style !== "none";
+    const nodeColor = hasVisibleColor ? n.color : "transparent";
+    const nodeText = hasVisibleColor
+      ? readableInk(n.color)
+      : "var(--canvas-ink)";
+    el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasVisibleColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
     el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
