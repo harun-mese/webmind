@@ -45,22 +45,33 @@ export function parseMapLocation(value) {
 export function buildEdgePath(source, target, style = "curved") {
   const sourceSize = nodeDimensions(source);
   const targetSize = nodeDimensions(target);
-  let x1 = source.x + sourceSize.width / 2;
-  let y1 = source.y + sourceSize.height / 2;
-  let x2 = target.x + targetSize.width / 2;
-  let y2 = target.y + targetSize.height / 2;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
+  const sourceCenter = {
+    x: source.x + sourceSize.width / 2,
+    y: source.y + sourceSize.height / 2,
+  };
+  const targetCenter = {
+    x: target.x + targetSize.width / 2,
+    y: target.y + targetSize.height / 2,
+  };
+  const dx = targetCenter.x - sourceCenter.x;
+  const dy = targetCenter.y - sourceCenter.y;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const unitX = dx / distance;
+  const unitY = dy / distance;
   const horizontal = Math.abs(dx) > Math.abs(dy);
   const gap = 12;
-
-  if (horizontal) {
-    x1 += Math.sign(dx) * (sourceSize.width / 2 + gap);
-    x2 -= Math.sign(dx) * (targetSize.width / 2 + gap);
-  } else {
-    y1 += Math.sign(dy) * (sourceSize.height / 2 + gap);
-    y2 -= Math.sign(dy) * (targetSize.height / 2 + gap);
-  }
+  const rayDistance = (size) =>
+    Math.min(
+      Math.abs(unitX) > 0.0001 ? size.width / 2 / Math.abs(unitX) : Infinity,
+      Math.abs(unitY) > 0.0001 ? size.height / 2 / Math.abs(unitY) : Infinity,
+    );
+  const sourceDistance = rayDistance(sourceSize) + gap;
+  const targetDistance = rayDistance(targetSize) + gap;
+  const round = (value) => Math.round(value * 100) / 100;
+  const x1 = round(sourceCenter.x + unitX * sourceDistance);
+  const y1 = round(sourceCenter.y + unitY * sourceDistance);
+  const x2 = round(targetCenter.x - unitX * targetDistance);
+  const y2 = round(targetCenter.y - unitY * targetDistance);
 
   if (style === "straight") return `M${x1},${y1} L${x2},${y2}`;
   if (style === "elbow") {
@@ -69,18 +80,16 @@ export function buildEdgePath(source, target, style = "curved") {
       : `M${x1},${y1} L${x1},${(y1 + y2) / 2} L${x2},${(y1 + y2) / 2} L${x2},${y2}`;
   }
 
-  if (horizontal) {
-    const bend = Math.min(
-      Math.max(35, Math.abs(dx) * 0.35),
-      Math.max(18, Math.abs(x2 - x1) / 2),
-    );
-    return `M${x1},${y1} C${x1 + Math.sign(dx || 1) * bend},${y1} ${x2 - Math.sign(dx || 1) * bend},${y2} ${x2},${y2}`;
-  }
-  const bend = Math.min(
-    Math.max(35, Math.abs(dy) * 0.35),
-    Math.max(18, Math.abs(y2 - y1) / 2),
-  );
-  return `M${x1},${y1} C${x1},${y1 + Math.sign(dy || 1) * bend} ${x2},${y2 - Math.sign(dy || 1) * bend} ${x2},${y2}`;
+  const pathDistance = Math.max(1, Math.hypot(x2 - x1, y2 - y1));
+  const travel = Math.min(110, Math.max(24, pathDistance * 0.34));
+  const curve = Math.min(72, Math.max(0, pathDistance * 0.16));
+  const normalX = -unitY;
+  const normalY = unitX;
+  const control1X = round(x1 + unitX * travel + normalX * curve);
+  const control1Y = round(y1 + unitY * travel + normalY * curve);
+  const control2X = round(x2 - unitX * travel + normalX * curve);
+  const control2Y = round(y2 - unitY * travel + normalY * curve);
+  return `M${x1},${y1} C${control1X},${control1Y} ${control2X},${control2Y} ${x2},${y2}`;
 }
 
 export function readableInk(hexColor) {
