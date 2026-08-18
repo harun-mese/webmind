@@ -1805,3 +1805,70 @@ body.sidebar-open .zoom-controls {
   background: var(--ink);
   color: white;
 }
+
+/* Theme-safe item text, expanded colors and expressive fonts */
+.mind-node {
+  color: var(--node-text, var(--ink));
+}
+.mind-node.no-color {
+  border-color: color-mix(in srgb, var(--canvas-ink), transparent 62%);
+  background: transparent;
+  box-shadow: none;
+  color: var(--canvas-ink);
+}
+.mind-node.no-color .node-media {
+  background: color-mix(in srgb, var(--canvas-ink), transparent 92%);
+}
+.color-swatches {
+  flex-wrap: wrap;
+}
+.no-color-swatch {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 46%,
+      #d15e55 47%,
+      #d15e55 53%,
+      transparent 54%
+    ),
+    repeating-conic-gradient(#fff 0 25%, #e4e0d8 0 50%) 50% / 8px 8px;
+}
+.mind-node.font-indie,
+.mind-node.font-indie .node-title {
+  font-family: "Indie Flower", cursive;
+}
+.mind-node.font-caveat,
+.mind-node.font-caveat .node-title {
+  font-family: "Caveat", cursive;
+  font-weight: 600;
+}
+.mind-node.font-patrick,
+.mind-node.font-patrick .node-title {
+  font-family: "Patrick Hand", cursive;
+}
+.mind-node.font-kalam,
+.mind-node.font-kalam .node-title {
+  font-family: "Kalam", cursive;
+  font-weight: 400;
+}
+.mind-node.font-rounded,
+.mind-node.font-rounded .node-title {
+  font-family: ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  font-size: 0.84em;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+.node-font-field select {
+  width: 100%;
+  height: 39px;
+  margin-top: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  font:
+    16px "Indie Flower",
+    cursive;
+}

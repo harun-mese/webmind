@@ -10,12 +10,18 @@ const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
 const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 const COLORS = [
+  null,
   "#fff0a8",
   "#ffd5c7",
   "#d9edc5",
   "#cde7f5",
   "#ddd6fa",
   "#f8d7ec",
+  "#f6c3a5",
+  "#bfe4dc",
+  "#bfd0f2",
+  "#e6c3a8",
+  "#d8d8d8",
 ];
 const THEMES = {
   light: {
@@ -89,7 +95,7 @@ const initialMap = () => ({
       title: "Ana fikir",
       x: 340,
       y: 220,
-      color: COLORS[0],
+      color: COLORS[1],
       note: "Buraya notlarını yazabilirsin.",
       tags: [],
     },
@@ -229,9 +235,12 @@ function renderNodes() {
     const el = document.createElement("article");
     const type = n.type || "text";
     const style = n.style || map().appearance.itemStyles?.[type] || "soft";
-    el.className = `mind-node item-${type} style-${style} size-${n.size || "medium"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
+    const hasColor = Boolean(n.color);
+    const nodeColor = n.color || "transparent";
+    const nodeText = hasColor ? readableInk(n.color) : "var(--canvas-ink)";
+    el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
-    el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${n.color};--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
+    el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
     el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
     const title = el.querySelector(".node-title");
     title.textContent = n.title;
@@ -465,6 +474,7 @@ function renderNote() {
   $("#note-title").value = n.title;
   $("#note-text").value = n.note || "";
   $("#note-tags").value = (n.tags || []).join(", ");
+  $("#node-font").value = n.font || "indie";
   const isText = (n.type || "text") === "text";
   $("#node-width-field").hidden = !isText;
   $("#node-size-field").hidden = isText;
@@ -491,15 +501,15 @@ function renderNote() {
         : n.mediaUrl;
     attachment.download = n.type === "file" ? n.fileName || "dosya" : "";
   }
-  $("#node-colors").innerHTML = COLORS.map(
-    (c) =>
-      `<button class="swatch ${c === n.color ? "active" : ""}" data-color="${c}" style="background:${c}" aria-label="Renk seç"></button>`,
-  ).join("");
+  $("#node-colors").innerHTML = COLORS.map((color) => {
+    const value = color || "none";
+    return `<button class="swatch ${color === (n.color || null) ? "active" : ""} ${color ? "" : "no-color-swatch"}" data-color="${value}" ${color ? `style="background:${color}"` : ""} aria-label="${color ? "Renk seç" : "Rengi kaldır"}"></button>`;
+  }).join("");
   $$(".swatch").forEach(
     (b) =>
       (b.onclick = () => {
         snapshot();
-        n.color = b.dataset.color;
+        n.color = b.dataset.color === "none" ? null : b.dataset.color;
         renderAll();
         scheduleSave();
       }),
@@ -924,6 +934,15 @@ function updateNodeFromPanel() {
 $("#note-title").onchange = updateNodeFromPanel;
 $("#note-text").onchange = updateNodeFromPanel;
 $("#note-tags").onchange = updateNodeFromPanel;
+$("#node-font").onchange = (event) => {
+  const node = map().nodes.find((item) => item.id === selectedNodeId);
+  if (!node || node.font === event.target.value) return;
+  snapshot();
+  node.font = event.target.value;
+  renderNodes();
+  renderEdges();
+  scheduleSave();
+};
 $$("#node-style-options button").forEach(
   (button) =>
     (button.onclick = () => {
