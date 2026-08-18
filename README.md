@@ -5,6 +5,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 ## Özellikler
 
 - Tuvalde çift tıklayarak fikir oluşturma
+- Üstteki **Yeni öğe** menüsüyle metin, görsel, YouTube videosu ve dosya kartları ekleme
 - Düğüm başlığını çift tıklayarak düzenleme ve düğümleri sürükleme
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
@@ -27,6 +28,7 @@ Ardından `http://localhost:4173` adresini açın.
 ## Kullanım
 
 - Boş canvas alanına **çift tıklayın**: yeni fikir
+- **Yeni öğe** düğmesine basın: görsel, YouTube videosu veya dosya ekleyin
 - Bir fikre **çift tıklayın**: başlığı düzenle
 - Bir fikri **sürükleyin**: konumunu değiştir
 - Fikrin sağındaki küçük noktayı başka bir fikre **sürükleyin**: bağlantı oluştur

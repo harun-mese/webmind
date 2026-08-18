@@ -61,6 +61,9 @@
           >
             ⌗
           </button>
+          <button id="add-item-btn" class="button primary-button">
+            <span>＋</span> Yeni öğe
+          </button>
           <button id="appearance-btn" class="button">
             <span>◐</span> Görünüm
           </button>
@@ -197,6 +200,14 @@
                 id="note-tags"
                 placeholder="fikir, araştırma, önemli"
             /></label>
+            <a
+              id="open-attachment"
+              class="attachment-button"
+              hidden
+              target="_blank"
+              rel="noopener"
+              >İçeriği aç ↗</a
+            >
             <div class="color-row">
               <span>Fikir rengi</span>
               <div id="node-colors" class="color-swatches"></div>
@@ -269,6 +280,68 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="item-dialog" class="item-dialog">
+      <form id="item-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <span class="eyebrow">TUVALE EKLE</span>
+            <h2>Yeni bir öğe oluştur</h2>
+          </div>
+          <button
+            type="button"
+            id="close-item-dialog"
+            class="icon-button"
+            aria-label="Kapat"
+          >
+            ×
+          </button>
+        </div>
+        <div
+          id="item-type-options"
+          class="item-type-options"
+          role="radiogroup"
+          aria-label="Öğe türü"
+        >
+          <button type="button" class="item-type active" data-type="text">
+            <span>✎</span><strong>Metin</strong>
+          </button>
+          <button type="button" class="item-type" data-type="image">
+            <span>▧</span><strong>Görsel</strong>
+          </button>
+          <button type="button" class="item-type" data-type="youtube">
+            <span>▶</span><strong>YouTube</strong>
+          </button>
+          <button type="button" class="item-type" data-type="file">
+            <span>⌑</span><strong>Dosya</strong>
+          </button>
+        </div>
+        <input id="item-type" type="hidden" value="text" />
+        <label class="dialog-field"
+          >Başlık<input
+            id="item-title"
+            maxlength="100"
+            placeholder="Yeni fikir"
+        /></label>
+        <label id="item-url-field" class="dialog-field" hidden
+          >Bağlantı<input
+            id="item-url"
+            type="url"
+            placeholder="https://youtube.com/watch?v=…"
+        /></label>
+        <label id="item-file-field" class="dialog-field file-drop" hidden>
+          <span id="item-file-label">Dosya seç veya buraya bırak</span>
+          <small>Görseller ve küçük dosyalar cihazında saklanır.</small>
+          <input id="item-file" type="file" />
+        </label>
+        <div class="dialog-actions">
+          <button type="button" id="cancel-item" class="button">Vazgeç</button>
+          <button type="submit" class="button primary-button">
+            Tuvale ekle
+          </button>
+        </div>
+      </form>
+    </dialog>
     <script type="module" src="js/app.js"></script>
   </body>
 </html>

@@ -11,7 +11,9 @@ Uygulama vanilla HTML, CSS ve ES module JavaScript ile geliştirilir. Düğümle
 ## Tamamlanan MVP kapsamı
 
 - Çoklu harita oluşturma ve haritalar arasında geçiş
+- Tam ekran canvas üzerinde yüzen araç çubuğu, harita listesi ve detay paneli
 - Çift tıklamayla düğüm oluşturma ve yerinde başlık düzenleme
+- Metin, yerel görsel, YouTube videosu ve indirilebilir dosya öğeleri
 - Pointer Events ile düğüm ve canvas sürükleme
 - SVG üzerinden düğümler arası bağlantı oluşturma
 - Yönsüz, ileri, geri ve çift yönlü bağlantılar

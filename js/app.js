@@ -1,4 +1,5 @@
 import { loadWorkspace, saveWorkspace } from "./database.js";
+import { formatBytes, nodeDimensions, youtubeId } from "./item-utils.js";
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
 const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
@@ -25,6 +26,7 @@ const initialMap = () => ({
   nodes: [
     {
       id: uid(),
+      type: "text",
       title: "Ana fikir",
       x: 340,
       y: 220,
@@ -43,7 +45,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   saveTimer,
   drag = null,
   connect = null,
-  pan = null;
+  pan = null,
+  pendingItemPosition = null;
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
   edgeRoot = $("#viewport-edges");
@@ -133,16 +136,17 @@ function renderNodes() {
   nodeLayer.innerHTML = "";
   map().nodes.forEach((n) => {
     const el = document.createElement("article");
-    el.className = `mind-node ${n.id === selectedNodeId ? "selected" : ""}`;
+    const type = n.type || "text";
+    el.className = `mind-node item-${type} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${n.color}`;
-    el.innerHTML = `<div class="node-title"></div><button class="connector" aria-label="${escapeHtml(n.title)} öğesinden bağlantı oluştur"></button>`;
+    el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>`;
     const title = el.querySelector(".node-title");
     title.textContent = n.title;
     el.addEventListener("pointerdown", onNodeDown);
     el.addEventListener("click", (e) => {
       e.stopPropagation();
-      selectNode(n.id);
+      selectNodeWithoutReplacingDraggedElement(n.id);
     });
     el.addEventListener("dblclick", (e) => {
       e.stopPropagation();
@@ -155,10 +159,33 @@ function renderNodes() {
   });
   $("#empty-state").hidden = map().nodes.length > 0;
 }
+function renderNodeMedia(node) {
+  if (node.type === "image" && node.mediaUrl)
+    return `<div class="node-media"><img src="${escapeAttribute(node.mediaUrl)}" alt="" draggable="false"></div>`;
+  if (node.type === "youtube" && node.mediaUrl)
+    return `<div class="node-media"><iframe src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.mediaUrl)}" title="${escapeAttribute(node.title)}" loading="lazy" allowfullscreen></iframe></div>`;
+  if (node.type === "file")
+    return `<div class="node-media file-card"><span class="file-card-icon">${fileIcon(node.fileType)}</span><span class="file-card-meta"><span class="file-card-name">${escapeHtml(node.fileName || "Dosya")}</span><span class="file-card-size">${formatBytes(node.fileSize || 0)}</span></span></div>`;
+  return "";
+}
+function fileIcon(type = "") {
+  if (type.includes("pdf")) return "PDF";
+  if (type.includes("audio")) return "♫";
+  if (type.includes("video")) return "▶";
+  return "DOC";
+}
 function escapeHtml(s) {
   const d = document.createElement("div");
   d.textContent = s;
   return d.innerHTML;
+}
+function escapeAttribute(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 function editTitle(el, n) {
   el.contentEditable = "true";
@@ -235,10 +262,8 @@ function startConnection(e, n) {
   renderEdges();
 }
 function pathFor(a, b, style = "curved") {
-  const aw = 156,
-    ah = 62,
-    bw = 156,
-    bh = 62;
+  const { width: aw, height: ah } = nodeDimensions(a),
+    { width: bw, height: bh } = nodeDimensions(b);
   let x1 = a.x + aw / 2,
     y1 = a.y + ah / 2,
     x2 = b.x + bw / 2,
@@ -284,13 +309,18 @@ function renderEdges() {
       selectEdge(edge.id, e.clientX, e.clientY);
     });
     if (edge.label) {
+      const ad = nodeDimensions(a),
+        bd = nodeDimensions(b);
       const text = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "text",
       );
       text.setAttribute("class", "edge-label");
-      text.setAttribute("x", (a.x + b.x + 156) / 2);
-      text.setAttribute("y", (a.y + b.y + 62) / 2 - 8);
+      text.setAttribute("x", (a.x + ad.width / 2 + b.x + bd.width / 2) / 2);
+      text.setAttribute(
+        "y",
+        (a.y + ad.height / 2 + b.y + bd.height / 2) / 2 - 8,
+      );
       text.textContent = edge.label;
       g.append(text);
     }
@@ -298,10 +328,14 @@ function renderEdges() {
   });
   if (connect) {
     const s = map().nodes.find((n) => n.id === connect.source),
+      dimensions = nodeDimensions(s),
       p = screenToWorld(connect.x, connect.y),
       temp = document.createElementNS("http://www.w3.org/2000/svg", "path");
     temp.setAttribute("class", "temp-edge");
-    temp.setAttribute("d", `M${s.x + 156},${s.y + 31} L${p.x},${p.y}`);
+    temp.setAttribute(
+      "d",
+      `M${s.x + dimensions.width},${s.y + dimensions.height / 2} L${p.x},${p.y}`,
+    );
     edgeRoot.append(temp);
   }
 }
@@ -339,6 +373,15 @@ function renderNote() {
   $("#note-title").value = n.title;
   $("#note-text").value = n.note || "";
   $("#note-tags").value = (n.tags || []).join(", ");
+  const attachment = $("#open-attachment");
+  attachment.hidden = !n.mediaUrl || n.type === "image";
+  if (!attachment.hidden) {
+    attachment.href =
+      n.type === "youtube"
+        ? `https://www.youtube.com/watch?v=${n.mediaUrl}`
+        : n.mediaUrl;
+    attachment.download = n.type === "file" ? n.fileName || "dosya" : "";
+  }
   $("#node-colors").innerHTML = COLORS.map(
     (c) =>
       `<button class="swatch ${c === n.color ? "active" : ""}" data-color="${c}" style="background:${c}" aria-label="Renk seç"></button>`,
@@ -487,6 +530,92 @@ $("#new-map-btn").onclick = () => {
   renderAll();
   scheduleSave();
 };
+function openItemDialog(position = null) {
+  pendingItemPosition =
+    position ||
+    screenToWorld(
+      canvas.clientWidth / 2 + canvas.getBoundingClientRect().left,
+      canvas.clientHeight / 2 + canvas.getBoundingClientRect().top,
+    );
+  $("#item-form").reset();
+  setItemType("text");
+  $("#item-dialog").showModal();
+  requestAnimationFrame(() => $("#item-title").focus());
+}
+function setItemType(type) {
+  $("#item-type").value = type;
+  $$(".item-type").forEach((button) =>
+    button.classList.toggle("active", button.dataset.type === type),
+  );
+  $("#item-url-field").hidden = type !== "youtube";
+  $("#item-file-field").hidden = !["image", "file"].includes(type);
+  $("#item-file").accept = type === "image" ? "image/*" : "";
+  $("#item-file-label").textContent =
+    type === "image" ? "Bir görsel seç" : "Dosya seç veya buraya bırak";
+}
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+async function createItemFromDialog() {
+  const type = $("#item-type").value,
+    file = $("#item-file").files[0],
+    position = pendingItemPosition || { x: 300, y: 200 },
+    node = {
+      id: uid(),
+      type,
+      title:
+        $("#item-title").value.trim() ||
+        {
+          text: "Yeni fikir",
+          image: "Yeni görsel",
+          youtube: "YouTube videosu",
+          file: file?.name || "Yeni dosya",
+        }[type],
+      x: position.x - (type === "text" ? 78 : 115),
+      y: position.y - 31,
+      color: COLORS[map().nodes.length % COLORS.length],
+      note: "",
+      tags: [],
+    };
+  if (["image", "file"].includes(type)) {
+    if (!file) throw new Error("Lütfen bir dosya seç.");
+    if (file.size > 12 * 1024 * 1024)
+      throw new Error("Dosya en fazla 12 MB olabilir.");
+    node.mediaUrl = await readFileAsDataUrl(file);
+    node.fileName = file.name;
+    node.fileType = file.type;
+    node.fileSize = file.size;
+  }
+  if (type === "youtube") {
+    node.mediaUrl = youtubeId($("#item-url").value.trim());
+    if (!node.mediaUrl) throw new Error("Geçerli bir YouTube bağlantısı gir.");
+  }
+  snapshot();
+  map().nodes.push(node);
+  selectedNodeId = node.id;
+  $("#item-dialog").close();
+  renderAll();
+  scheduleSave();
+}
+$("#add-item-btn").onclick = () => openItemDialog();
+$$(".item-type").forEach(
+  (button) => (button.onclick = () => setItemType(button.dataset.type)),
+);
+$("#close-item-dialog").onclick = $("#cancel-item").onclick = () =>
+  $("#item-dialog").close();
+$("#item-form").onsubmit = async (event) => {
+  event.preventDefault();
+  try {
+    await createItemFromDialog();
+  } catch (error) {
+    toast(error.message || "Öğe eklenemedi.");
+  }
+};
 $("#appearance-btn").onclick = () => {
   $("#appearance-popover").hidden = !$("#appearance-popover").hidden;
 };
@@ -582,8 +711,8 @@ $("#fit-btn").onclick = () => {
   const r = canvas.getBoundingClientRect(),
     minX = Math.min(...nodes.map((n) => n.x)),
     minY = Math.min(...nodes.map((n) => n.y)),
-    maxX = Math.max(...nodes.map((n) => n.x + 156)),
-    maxY = Math.max(...nodes.map((n) => n.y + 62)),
+    maxX = Math.max(...nodes.map((n) => n.x + nodeDimensions(n).width)),
+    maxY = Math.max(...nodes.map((n) => n.y + nodeDimensions(n).height)),
     z = Math.min(
       1.2,
       (r.width - 100) / (maxX - minX),

@@ -1,10 +1,11 @@
-const CACHE = "webmind-v1";
+const CACHE = "webmind-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/styles.css",
   "./js/app.js",
   "./js/database.js",
+  "./js/item-utils.js",
   "./manifest.webmanifest",
   "./assets/icons/icon.svg",
 ];
