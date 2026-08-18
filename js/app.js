@@ -128,7 +128,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   recordingStartedAt = 0,
   recordingTimer = null,
   edgeFrame = null,
-  renderedMap = null;
+  renderedMap = null,
+  suppressNodeClick = null;
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
   edgeRoot = $("#viewport-edges");
@@ -287,6 +288,10 @@ function renderNodes() {
       el.addEventListener("pointerdown", onNodeDown);
       el.addEventListener("click", (event) => {
         event.stopPropagation();
+        if (suppressNodeClick === el.dataset.id) {
+          suppressNodeClick = null;
+          return;
+        }
         selectNodeWithoutReplacingDraggedElement(el.dataset.id);
       });
       el.addEventListener("dblclick", (event) => {
@@ -608,8 +613,8 @@ function onNodeDown(e) {
   )
     return;
   e.stopPropagation();
+  suppressNodeClick = null;
   const n = map().nodes.find((n) => n.id === e.currentTarget.dataset.id);
-  selectNodeWithoutReplacingDraggedElement(n.id);
   snapshot();
   drag = {
     id: n.id,
@@ -726,6 +731,18 @@ function selectEdge(id, x, y) {
   pop.style.top = `${Math.min(y + 10, innerHeight - 390)}px`;
   pop.hidden = false;
 }
+function nodeEditableLink(node) {
+  if (node.type === "youtube" && node.mediaUrl)
+    return `https://www.youtube.com/watch?v=${node.mediaUrl}`;
+  if (node.type === "website") return node.mediaUrl || "";
+  if (node.type === "map" && node.mapLocation)
+    return `${node.mapLocation.lat}, ${node.mapLocation.lng}`;
+  if (node.type === "music" && node.youtubeId)
+    return `https://www.youtube.com/watch?v=${node.youtubeId}`;
+  if (["image", "music", "file"].includes(node.type))
+    return /^https?:/i.test(node.mediaUrl || "") ? node.mediaUrl : null;
+  return null;
+}
 function renderNote() {
   const n = map().nodes.find((n) => n.id === selectedNodeId);
   $("#note-panel").classList.toggle("open", !!n);
@@ -794,6 +811,10 @@ function renderNote() {
       ? n.fileName || "dosya"
       : "";
   }
+  const editableLink = nodeEditableLink(n);
+  $("#node-link-field").hidden = editableLink === null;
+  $("#node-link").type = n.type === "map" ? "text" : "url";
+  $("#node-link").value = editableLink || "";
   $("#node-colors").innerHTML = COLORS.map((color) => {
     const value = color || "none";
     return `<button class="swatch ${color === (n.color || null) ? "active" : ""} ${color ? "" : "no-color-swatch"}" data-color="${value}" ${color ? `style="background:${color}"` : ""} aria-label="${color ? "Renk seç" : "Rengi kaldır"}"></button>`;
@@ -897,9 +918,11 @@ window.addEventListener("pointermove", (e) => {
   }
   if (drag) {
     const n = map().nodes.find((n) => n.id === drag.id);
-    n.x = drag.x + (e.clientX - drag.startX) / map().viewport.zoom;
-    n.y = drag.y + (e.clientY - drag.startY) / map().viewport.zoom;
-    drag.moved = true;
+    const deltaX = e.clientX - drag.startX;
+    const deltaY = e.clientY - drag.startY;
+    n.x = drag.x + deltaX / map().viewport.zoom;
+    n.y = drag.y + deltaY / map().viewport.zoom;
+    drag.moved ||= Math.hypot(deltaX, deltaY) > 4;
     const element = $(`.mind-node[data-id="${drag.id}"]`);
     if (element) {
       element.style.left = `${n.x}px`;
@@ -924,8 +947,10 @@ window.addEventListener("pointerup", (e) => {
     scheduleSave();
   }
   if (drag) {
-    if (drag.moved) scheduleSave();
-    else history.pop();
+    if (drag.moved) {
+      suppressNodeClick = drag.id;
+      scheduleSave();
+    } else history.pop();
     drag = null;
   }
   if (connect) {
@@ -1384,6 +1409,47 @@ $("#note-title").onchange = updateNodeFromPanel;
 $("#note-subtitle").onchange = updateNodeFromPanel;
 $("#note-text").onchange = updateNodeFromPanel;
 $("#note-tags").onchange = updateNodeFromPanel;
+$("#node-link").onchange = async (event) => {
+  const node = map().nodes.find((item) => item.id === selectedNodeId);
+  if (!node) return;
+  const value = event.target.value.trim();
+  let nextUrl = null;
+  let nextYoutubeId = null;
+  let nextLocation = null;
+  if (node.type === "youtube") nextYoutubeId = youtubeId(value);
+  else if (node.type === "map") nextLocation = parseMapLocation(value);
+  else if (node.type === "music") {
+    nextYoutubeId = youtubeId(value);
+    if (!nextYoutubeId) nextUrl = normalizeWebUrl(value);
+  } else nextUrl = normalizeWebUrl(value);
+  if (
+    (node.type === "youtube" && !nextYoutubeId) ||
+    (node.type === "map" && !nextLocation) ||
+    (!["youtube", "map"].includes(node.type) && !nextYoutubeId && !nextUrl)
+  ) {
+    toast("Geçerli bir bağlantı gir.");
+    renderNote();
+    return;
+  }
+  snapshot();
+  if (node.type === "youtube") node.mediaUrl = nextYoutubeId;
+  else if (node.type === "map") node.mapLocation = nextLocation;
+  else if (node.type === "music") {
+    node.youtubeId = nextYoutubeId || null;
+    node.mediaUrl = nextYoutubeId ? null : nextUrl;
+  } else {
+    node.mediaUrl = nextUrl;
+    if (node.type === "website") {
+      node.websiteMetadata = node.websitePreview
+        ? await fetchWebsiteMetadata(nextUrl)
+        : null;
+    }
+  }
+  renderNodes();
+  renderEdges();
+  renderNote();
+  scheduleSave();
+};
 $("#website-preview").onchange = async (event) => {
   const node = map().nodes.find((item) => item.id === selectedNodeId);
   if (!node || node.type !== "website") return;

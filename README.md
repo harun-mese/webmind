@@ -14,6 +14,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - İsteğe bağlı, tamamen silinebilen başlıklar ve satır/renk/kalın/altı çizili biçimlendirmeli rich text öğeleri
 - Stil, seçim ve detay işlemlerinde iframe/video/harita/ses DOM'unu yerinde koruyan, hareket sırasında frame-sınırlı canvas çizimi
 - Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
+- Yalnızca gerçek tıklamada açılan detay paneli ve panelden düzenlenebilen harici öğe bağlantıları
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
 - Sade SVG kontrolleri, ilerleme çizgisi ve süre göstergeli özel ses oynatıcı
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli
