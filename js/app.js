@@ -844,16 +844,25 @@ $("#sidebar-close").onclick = closeSidebar;
 $$(".popover-close").forEach(
   (b) => (b.onclick = () => (b.closest(".popover").hidden = true)),
 );
-document.addEventListener("pointerdown", (event) => {
+function closeFloatingPanels(event) {
+  const target = event.target instanceof Element ? event.target : null;
   if (
-    event.target.closest(".popover") ||
-    event.target.closest("#appearance-btn,#settings-btn")
+    target?.closest(".popover") ||
+    target?.closest("#appearance-btn,#settings-btn")
   )
     return;
   $$(".popover").forEach((popover) => (popover.hidden = true));
-});
+}
+document.addEventListener("pointerdown", closeFloatingPanels, true);
 $("#item-dialog").addEventListener("pointerdown", (event) => {
-  if (event.target === event.currentTarget) event.currentTarget.close();
+  const form = $("#item-form");
+  const rect = form.getBoundingClientRect();
+  const outside =
+    event.clientX < rect.left ||
+    event.clientX > rect.right ||
+    event.clientY < rect.top ||
+    event.clientY > rect.bottom;
+  if (outside) event.currentTarget.close();
 });
 $("#canvas-color").oninput = (e) =>
   mutateAppearance("canvasColor", e.target.value);
