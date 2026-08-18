@@ -1,4 +1,4 @@
-const CACHE = "webmind-v41";
+const CACHE = "webmind-v42";
 const ASSETS = [
   "./",
   "./index.html",

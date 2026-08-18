@@ -841,7 +841,7 @@ function renderEdges() {
       `edge-group ${edge.id === selectedEdgeId ? "selected" : ""}`,
     );
     g.dataset.id = edge.id;
-    const p = buildEdgePath(a, b, edge.pathStyle, map().nodes);
+    const p = buildEdgePath(a, b, edge.pathStyle);
     const dash =
       edge.lineStyle === "dashed"
         ? "9 7"

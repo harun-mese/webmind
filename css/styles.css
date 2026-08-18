@@ -2949,3 +2949,16 @@ button > svg,
   background: var(--mark-color);
   content: "";
 }
+
+#edge-path-style {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+#edge-path-style button {
+  min-height: 34px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+}
+#edge-path-style button:nth-last-child(-n + 4) {
+  border-bottom: 0;
+}

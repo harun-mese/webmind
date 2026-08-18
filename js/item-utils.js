@@ -42,12 +42,7 @@ export function parseMapLocation(value) {
   return { lat, lng };
 }
 
-export function buildEdgePath(
-  source,
-  target,
-  style = "curved",
-  obstacles = [],
-) {
+export function buildEdgePath(source, target, style = "curved") {
   const sourceSize = nodeDimensions(source);
   const targetSize = nodeDimensions(target);
   const sourceCenter = {
@@ -79,58 +74,6 @@ export function buildEdgePath(
   const y2 = round(targetCenter.y - unitY * targetDistance);
 
   if (style === "straight") return `M${x1},${y1} L${x2},${y2}`;
-  const blockers = obstacles.filter((node) => {
-    if (node.id === source.id || node.id === target.id) return false;
-    const size = nodeDimensions(node);
-    const padding = 8;
-    return (
-      node.x - padding <= Math.max(x1, x2) &&
-      node.x + size.width + padding >= Math.min(x1, x2) &&
-      node.y - padding <= Math.max(y1, y2) &&
-      node.y + size.height + padding >= Math.min(y1, y2)
-    );
-  });
-  if (blockers.length) {
-    const clearance = 26;
-    const bounds = blockers.map((node) => {
-      const size = nodeDimensions(node);
-      return {
-        left: node.x,
-        right: node.x + size.width,
-        top: node.y,
-        bottom: node.y + size.height,
-      };
-    });
-    let corridor;
-    if (horizontal) {
-      const above =
-        Math.min(y1, y2, ...bounds.map((item) => item.top)) - clearance;
-      const below =
-        Math.max(y1, y2, ...bounds.map((item) => item.bottom)) + clearance;
-      corridor =
-        Math.abs(y1 - above) + Math.abs(y2 - above) <=
-        Math.abs(y1 - below) + Math.abs(y2 - below)
-          ? above
-          : below;
-      if (style === "elbow")
-        return `M${x1},${y1} L${x1},${corridor} L${x2},${corridor} L${x2},${y2}`;
-      const handle = Math.min(32, distance * 0.16);
-      return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${x1},${corridor} ${x1},${corridor} L${x2},${corridor} C${x2},${corridor} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
-    }
-    const left =
-      Math.min(x1, x2, ...bounds.map((item) => item.left)) - clearance;
-    const right =
-      Math.max(x1, x2, ...bounds.map((item) => item.right)) + clearance;
-    corridor =
-      Math.abs(x1 - left) + Math.abs(x2 - left) <=
-      Math.abs(x1 - right) + Math.abs(x2 - right)
-        ? left
-        : right;
-    if (style === "elbow")
-      return `M${x1},${y1} L${corridor},${y1} L${corridor},${y2} L${x2},${y2}`;
-    const handle = Math.min(32, distance * 0.16);
-    return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${corridor},${y1} ${corridor},${y1} L${corridor},${y2} C${corridor},${y2} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
-  }
   if (style === "elbow") {
     return horizontal
       ? `M${x1},${y1} L${(x1 + x2) / 2},${y1} L${(x1 + x2) / 2},${y2} L${x2},${y2}`
@@ -163,16 +106,50 @@ export function buildEdgePath(
     }
     return path;
   }
+  if (style === "zigzag") {
+    const turns = Math.max(4, Math.min(8, Math.round(pathDistance / 75)));
+    const amplitude = Math.min(30, Math.max(14, pathDistance * 0.09));
+    let path = `M${x1},${y1}`;
+    for (let index = 1; index < turns; index += 1) {
+      const progress = index / turns;
+      const offset = (index % 2 ? 1 : -1) * amplitude;
+      path += ` L${round(x1 + (x2 - x1) * progress + normalX * offset)},${round(y1 + (y2 - y1) * progress + normalY * offset)}`;
+    }
+    const finalLead = Math.min(28, pathDistance * 0.12);
+    return `${path} L${round(x2 - unitX * finalLead)},${round(y2 - unitY * finalLead)} L${x2},${y2}`;
+  }
+  if (style === "arc" || style === "crescent") {
+    const amplitude = Math.min(
+      style === "crescent" ? 105 : 82,
+      Math.max(style === "crescent" ? 45 : 30, pathDistance * 0.3),
+    );
+    const handle = Math.min(54, pathDistance * 0.2);
+    if (style === "arc") {
+      const middleX = round((x1 + x2) / 2 + normalX * amplitude);
+      const middleY = round((y1 + y2) / 2 + normalY * amplitude);
+      return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${round(middleX - unitX * handle)},${round(middleY - unitY * handle)} ${middleX},${middleY} C${round(middleX + unitX * handle)},${round(middleY + unitY * handle)} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+    }
+    const firstX = round(x1 + (x2 - x1) * 0.36 + normalX * amplitude);
+    const firstY = round(y1 + (y2 - y1) * 0.36 + normalY * amplitude);
+    const secondX = round(x1 + (x2 - x1) * 0.7 + normalX * amplitude * 0.24);
+    const secondY = round(y1 + (y2 - y1) * 0.7 + normalY * amplitude * 0.24);
+    return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${round(firstX - unitX * handle)},${round(firstY - unitY * handle)} ${firstX},${firstY} C${round(firstX + unitX * handle)},${round(firstY + unitY * handle)} ${round(secondX - unitX * handle)},${round(secondY - unitY * handle)} ${secondX},${secondY} C${round(secondX + unitX * handle)},${round(secondY + unitY * handle)} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+  }
   if (style === "loop") {
     const middleX = (x1 + x2) / 2;
     const middleY = (y1 + y2) / 2;
-    const radius = Math.min(90, Math.max(38, pathDistance * 0.28));
-    const handle = Math.min(52, pathDistance * 0.2);
-    const topX = round(middleX + normalX * radius);
-    const topY = round(middleY + normalY * radius);
-    const bottomX = round(middleX - normalX * radius);
-    const bottomY = round(middleY - normalY * radius);
-    return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${round(topX - unitX * radius)},${round(topY - unitY * radius)} ${topX},${topY} C${round(topX + unitX * radius)},${round(topY + unitY * radius)} ${round(bottomX + unitX * radius)},${round(bottomY + unitY * radius)} ${bottomX},${bottomY} C${round(bottomX - unitX * radius)},${round(bottomY - unitY * radius)} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+    const radius = Math.min(72, Math.max(30, pathDistance * 0.2));
+    const kappa = radius * 0.5523;
+    const point = (along, normal) => ({
+      x: round(middleX + unitX * along + normalX * normal),
+      y: round(middleY + unitY * along + normalY * normal),
+    });
+    const left = point(-radius, 0);
+    const top = point(0, radius);
+    const right = point(radius, 0);
+    const bottom = point(0, -radius);
+    const coordinate = (value) => `${value.x},${value.y}`;
+    return `M${x1},${y1} L${coordinate(left)} C${coordinate(point(-radius, kappa))} ${coordinate(point(-kappa, radius))} ${coordinate(top)} C${coordinate(point(kappa, radius))} ${coordinate(point(radius, kappa))} ${coordinate(right)} C${coordinate(point(radius, -kappa))} ${coordinate(point(kappa, -radius))} ${coordinate(bottom)} C${coordinate(point(-kappa, -radius))} ${coordinate(point(-radius, -kappa))} ${coordinate(left)} L${x2},${y2}`;
   }
   const travel = Math.min(110, Math.max(24, pathDistance * 0.34));
   const curve = Math.min(72, Math.max(0, pathDistance * 0.16));

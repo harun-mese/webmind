@@ -135,32 +135,20 @@ test("vertical elbow paths enter from the top or bottom edge", () => {
   );
 });
 
-test("non-straight edges route around intervening items", () => {
-  const source = { id: "source", type: "text", x: 0, y: 0 };
-  const target = { id: "target", type: "text", x: 400, y: 0 };
-  const blocker = { id: "blocker", type: "text", x: 200, y: 0 };
-  assert.equal(
-    buildEdgePath(source, target, "elbow", [source, target, blocker]),
-    "M168,31 L168,-26 L388,-26 L388,31",
-  );
-  assert.equal(
-    buildEdgePath(source, target, "straight", [source, target, blocker]),
-    "M168,31 L388,31",
-  );
-  assert.match(
-    buildEdgePath(source, target, "curved", [source, target, blocker]),
-    /L388,-26/,
-  );
-});
-
 test("decorative edge paths keep directional endpoints", () => {
   const source = { id: "source", type: "text", x: 0, y: 0 };
   const target = { id: "target", type: "text", x: 360, y: 120 };
   const wavy = buildEdgePath(source, target, "wavy");
   const loop = buildEdgePath(source, target, "loop");
+  const arc = buildEdgePath(source, target, "arc");
+  const crescent = buildEdgePath(source, target, "crescent");
+  const zigzag = buildEdgePath(source, target, "zigzag");
   assert.ok((wavy.match(/ C/g) || []).length >= 3);
-  assert.equal((loop.match(/ C/g) || []).length, 3);
-  for (const path of [wavy, loop]) {
+  assert.equal((loop.match(/ C/g) || []).length, 4);
+  assert.equal((arc.match(/ C/g) || []).length, 2);
+  assert.equal((crescent.match(/ C/g) || []).length, 3);
+  assert.ok((zigzag.match(/ L/g) || []).length >= 4);
+  for (const path of [wavy, loop, arc, crescent, zigzag]) {
     const values = path.match(/-?\d+(?:\.\d+)?/g).map(Number);
     const tangentX = values.at(-2) - values.at(-4);
     const tangentY = values.at(-1) - values.at(-3);
