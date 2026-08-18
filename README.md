@@ -14,6 +14,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - İsteğe bağlı, tamamen silinebilen başlıklar ve satır/renk/kalın/altı çizili biçimlendirmeli rich text öğeleri
 - Stil, seçim ve detay işlemlerinde iframe/video/harita/ses DOM'unu yerinde koruyan, hareket sırasında frame-sınırlı canvas çizimi
 - Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
+- Alt başlığı canvas üzerinde çift tıklayarak doğrudan düzenleyebilme
 - Yalnızca gerçek tıklamada açılan detay paneli ve panelden düzenlenebilen harici öğe bağlantıları
 - Mobilde tam yükseklik harita drawer’ı ve seçili öğedeki More düğmesinden açılan bottom sheet detayları
 - Mobil canvas üzerinde iki parmakla merkeze sabit pinch-to-zoom desteği

@@ -2446,6 +2446,14 @@ body.sidebar-open .zoom-controls {
   line-height: 1.35;
   white-space: pre-wrap;
 }
+.node-subtitle[contenteditable="true"] {
+  display: block;
+  min-height: 18px;
+  outline: 0;
+  border-bottom: 1px dashed currentColor;
+  cursor: text;
+  user-select: text;
+}
 .mind-node.item-text .node-subtitle {
   padding: 2px 0 0;
 }

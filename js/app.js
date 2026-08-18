@@ -299,7 +299,10 @@ function renderNodes() {
       el.addEventListener("dblclick", (event) => {
         event.stopPropagation();
         const node = map().nodes.find((item) => item.id === el.dataset.id);
-        if (node) editTitle(el.querySelector(".node-title"), node);
+        if (!node) return;
+        const subtitle = event.target.closest(".node-subtitle");
+        if (subtitle) editSubtitle(subtitle, node);
+        else editTitle(el.querySelector(".node-title"), node);
       });
       el.querySelector(".connector").addEventListener(
         "pointerdown",
@@ -559,6 +562,41 @@ function editTitle(el, n) {
     }
   };
   el.onblur = () => finish(false);
+}
+function editSubtitle(element, node) {
+  const original = node.subtitle || "";
+  let finished = false;
+  element.contentEditable = "true";
+  element.focus();
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  const selection = getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  const finish = (cancel = false) => {
+    if (finished) return;
+    finished = true;
+    element.contentEditable = "false";
+    const next = cancel ? original : element.textContent.trim();
+    if (!cancel && next !== original) {
+      snapshot();
+      node.subtitle = next;
+      scheduleSave();
+      renderNodes();
+      renderEdges();
+      renderNote();
+    } else element.textContent = original;
+  };
+  element.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      element.blur();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      finish(true);
+    }
+  };
+  element.onblur = () => finish(false);
 }
 document.addEventListener("selectionchange", () => {
   if (!activeTitleEditor) return;
