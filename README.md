@@ -8,6 +8,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Üstteki **Yeni öğe** menüsüyle metin, görsel, YouTube videosu ve dosya kartları ekleme
 - Faviconlu web sitesi kartları, Google Maps konumları ve oynatılabilir müzik öğeleri
 - Dosya veya bağlantıdan görsel; dosya, doğrudan ses URL'si veya YouTube'dan müzik ekleme
+- Görseller için orijinal oran, kare, rounded ve circle çerçeve seçenekleri
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
 - Sade SVG kontrolleri, ilerleme çizgisi ve süre göstergeli özel ses oynatıcı
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli

@@ -2285,3 +2285,72 @@ body.sidebar-open .zoom-controls {
   margin-top: 6px;
   font-size: 9px;
 }
+
+/* Aspect-ratio-safe image frames and shape presets */
+.image-frame {
+  background: transparent;
+}
+.image-frame img,
+.mind-node.item-image.size-small .image-frame img,
+.mind-node.item-image.size-large .image-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+}
+.image-shape-original {
+  overflow: visible;
+  border-radius: 0;
+}
+.image-shape-rounded {
+  overflow: hidden;
+  border-radius: 20px;
+}
+.image-shape-square,
+.image-shape-circle {
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.image-shape-square {
+  border-radius: 2px;
+}
+.image-shape-circle {
+  border-radius: 50%;
+}
+.image-shape-square img,
+.image-shape-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.image-shape-field {
+  padding: 0;
+  border: 0;
+  margin: 0 0 18px;
+}
+.image-shape-field legend {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.image-shape-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.image-shape-options button {
+  min-height: 34px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  font-size: 10px;
+}
+.image-shape-options button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: white;
+}

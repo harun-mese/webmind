@@ -35,7 +35,7 @@ const THEMES = {
   dark: {
     canvasColor: "#17191d",
     patternColor: "#343840",
-    textColor: "#f2eee6",
+    textColor: "#ffffff",
     arrowColor: "#adb6c8",
   },
   sage: {
@@ -282,7 +282,7 @@ function renderNodes() {
       (e) => startResize(e, n, el),
     );
     nodeLayer.append(el);
-    bindMediaControls(el);
+    bindMediaControls(el, n);
     n.renderWidth = el.offsetWidth;
     n.renderHeight = el.offsetHeight;
   });
@@ -290,7 +290,7 @@ function renderNodes() {
 }
 function renderNodeMedia(node) {
   if (node.type === "image" && node.mediaUrl)
-    return `<div class="node-media"><img src="${escapeAttribute(node.mediaUrl)}" alt="" draggable="false"></div>`;
+    return `<div class="node-media image-frame image-shape-${node.imageShape || "original"}"><img src="${escapeAttribute(node.mediaUrl)}" alt="" draggable="false"></div>`;
   if (node.type === "youtube" && node.mediaUrl)
     return `<div class="node-media"><iframe src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.mediaUrl)}" title="${escapeAttribute(node.title)}" loading="lazy" allowfullscreen></iframe></div>`;
   if (node.type === "website" && node.mediaUrl) {
@@ -333,7 +333,7 @@ function mediaTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 }
-function bindMediaControls(element) {
+function bindMediaControls(element, node) {
   const audio = element.querySelector(".audio-player audio");
   if (audio) {
     const toggle = element.querySelector(".audio-toggle");
@@ -364,6 +364,14 @@ function bindMediaControls(element) {
   }
   const favicon = element.querySelector(".website-icon img");
   if (favicon) favicon.onerror = () => favicon.remove();
+  const image = element.querySelector(".image-frame img");
+  if (image) {
+    image.addEventListener("load", () => {
+      node.renderWidth = element.offsetWidth;
+      node.renderHeight = element.offsetHeight;
+      renderEdges();
+    });
+  }
 }
 function fileIcon(type = "") {
   if (type.includes("pdf")) return "PDF";
@@ -644,8 +652,10 @@ function renderNote() {
   $("#node-font-size").value = n.fontSize || 20;
   $("#node-font-size-output").value = `${n.fontSize || 20}px`;
   const isText = (n.type || "text") === "text";
+  const isImage = n.type === "image";
   $("#node-width-field").hidden = !isText;
   $("#node-size-field").hidden = isText;
+  $("#image-shape-field").hidden = !isImage;
   if (isText) {
     const width = n.customWidth || n.renderWidth || 156;
     $("#node-width").value = width;
@@ -657,6 +667,14 @@ function renderNote() {
       button.classList.toggle(
         "active",
         button.dataset.nodeSize === (n.size || "medium"),
+      ),
+    );
+  }
+  if (isImage) {
+    $$("#image-shape-options button").forEach((button) =>
+      button.classList.toggle(
+        "active",
+        button.dataset.imageShape === (n.imageShape || "original"),
       ),
     );
   }
@@ -1329,6 +1347,20 @@ $$("#node-size-options button").forEach(
       if (!node || (node.size || "medium") === button.dataset.nodeSize) return;
       snapshot();
       node.size = button.dataset.nodeSize;
+      renderNodes();
+      renderEdges();
+      renderNote();
+      scheduleSave();
+    }),
+);
+$$("#image-shape-options button").forEach(
+  (button) =>
+    (button.onclick = () => {
+      const node = map().nodes.find((item) => item.id === selectedNodeId);
+      if (!node || node.type !== "image") return;
+      if ((node.imageShape || "original") === button.dataset.imageShape) return;
+      snapshot();
+      node.imageShape = button.dataset.imageShape;
       renderNodes();
       renderEdges();
       renderNote();
