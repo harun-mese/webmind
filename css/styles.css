@@ -1872,3 +1872,77 @@ body.sidebar-open .zoom-controls {
     16px "Indie Flower",
     cursive;
 }
+
+/* Per-item type scale and selection bubble editor */
+.mind-node .node-title {
+  font-size: var(--node-font-size, 20px) !important;
+}
+.node-font-size-field {
+  margin-bottom: 16px !important;
+}
+.node-font-size-field output {
+  float: right;
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.node-font-size-field input {
+  width: 100%;
+  margin-top: 9px;
+}
+.rich-text-toolbar {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: #24231f;
+  box-shadow: 0 10px 30px rgba(25, 22, 18, 0.26);
+  color: white;
+  animation: rich-toolbar-in 0.12s ease-out;
+}
+.rich-text-toolbar[hidden] {
+  display: none;
+}
+.rich-text-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: white;
+  font-family: ui-rounded, system-ui, sans-serif;
+}
+.rich-text-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+.rich-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 3px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.rich-text-toolbar .rich-color::before {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: var(--rich-color);
+  content: "";
+}
+@keyframes rich-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

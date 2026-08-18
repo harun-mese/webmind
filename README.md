@@ -20,6 +20,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Light, dark ve beş pastel canvas tema paketi
 - Şeffaf, kapsül, eskiz ve dolu seçenekleri dahil sekiz öğe stili
 - Rengi kaldırma seçeneği, genişletilmiş item paleti ve beş yaratıcı yazı karakteri
+- Item bazında yazı boyutu ve seçili kelimeler için balon biçimlendirme editörü
 - Her fikir için not, etiket ve renk
 - IndexedDB ile otomatik kayıt ve undo/redo
 - JSON yedekleme ve geri yükleme

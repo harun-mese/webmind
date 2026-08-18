@@ -286,6 +286,16 @@
                 <option value="rounded">Rounded</option>
               </select>
             </label>
+            <label class="node-font-size-field"
+              >Yazı boyutu <output id="node-font-size-output">20px</output>
+              <input
+                id="node-font-size"
+                type="range"
+                min="12"
+                max="42"
+                step="1"
+              />
+            </label>
             <fieldset class="node-style-field">
               <legend>Öğe stili</legend>
               <div id="node-style-options" class="node-style-options">
@@ -502,6 +512,61 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div
+      id="rich-text-toolbar"
+      class="rich-text-toolbar"
+      hidden
+      role="toolbar"
+      aria-label="Metin biçimlendirme"
+    >
+      <button type="button" data-rich-command="bold" aria-label="Kalın">
+        <strong>B</strong>
+      </button>
+      <button
+        type="button"
+        data-rich-command="underline"
+        aria-label="Altı çizili"
+      >
+        <u>U</u>
+      </button>
+      <span class="rich-divider"></span>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#302e29"
+        style="--rich-color: #302e29"
+        aria-label="Koyu renk"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#d85b4a"
+        style="--rich-color: #d85b4a"
+        aria-label="Kırmızı"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#287c72"
+        style="--rich-color: #287c72"
+        aria-label="Yeşil"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#4f6fb5"
+        style="--rich-color: #4f6fb5"
+        aria-label="Mavi"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#8a5ba8"
+        style="--rich-color: #8a5ba8"
+        aria-label="Mor"
+      ></button>
+    </div>
 
     <dialog id="item-dialog" class="item-dialog">
       <form id="item-form" method="dialog">

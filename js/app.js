@@ -112,7 +112,9 @@ let state = { version: 1, activeMapId: null, maps: [] },
   connect = null,
   pan = null,
   resize = null,
-  pendingItemPosition = null;
+  pendingItemPosition = null,
+  activeTitleEditor = null,
+  savedTitleRange = null;
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
   edgeRoot = $("#viewport-edges");
@@ -240,10 +242,11 @@ function renderNodes() {
     const nodeText = hasColor ? readableInk(n.color) : "var(--canvas-ink)";
     el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
-    el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
+    el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
     el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
     const title = el.querySelector(".node-title");
-    title.textContent = n.title;
+    if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
+    else title.textContent = n.title;
     el.addEventListener("pointerdown", onNodeDown);
     el.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -286,6 +289,36 @@ function escapeHtml(s) {
   d.textContent = s;
   return d.innerHTML;
 }
+function sanitizeRichText(html) {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  const allowed = new Set(["B", "STRONG", "U", "BR", "FONT"]);
+  const clean = (parent) => {
+    [...parent.childNodes].forEach((node) => {
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      if (!allowed.has(node.tagName)) {
+        clean(node);
+        node.replaceWith(...node.childNodes);
+        return;
+      }
+      [...node.attributes].forEach((attribute) => {
+        if (!(node.tagName === "FONT" && attribute.name === "color")) {
+          node.removeAttribute(attribute.name);
+        }
+      });
+      if (
+        node.tagName === "FONT" &&
+        node.hasAttribute("color") &&
+        !/^(#[\da-f]{3,8}|rgb\([\d\s,.%]+\))$/i.test(node.getAttribute("color"))
+      ) {
+        node.removeAttribute("color");
+      }
+      clean(node);
+    });
+  };
+  clean(template.content);
+  return template.innerHTML;
+}
 function escapeAttribute(value = "") {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -296,6 +329,7 @@ function escapeAttribute(value = "") {
 }
 function editTitle(el, n) {
   el.contentEditable = "true";
+  activeTitleEditor = el;
   el.focus();
   const range = document.createRange();
   range.selectNodeContents(el);
@@ -303,15 +337,21 @@ function editTitle(el, n) {
   sel.removeAllRanges();
   sel.addRange(range);
   const original = n.title;
+  const originalHtml = n.titleHtml || escapeHtml(n.title);
   const finish = (cancel) => {
+    $("#rich-text-toolbar").hidden = true;
+    activeTitleEditor = null;
+    savedTitleRange = null;
     el.contentEditable = "false";
     const next = cancel ? original : el.textContent.trim();
-    if (next && next !== n.title) {
+    const formatted = sanitizeRichText(el.innerHTML);
+    if (!cancel && next && (next !== n.title || formatted !== originalHtml)) {
       snapshot();
       n.title = next;
+      n.titleHtml = formatted;
       scheduleSave();
       renderAll();
-    } else el.textContent = n.title;
+    } else el.innerHTML = originalHtml;
   };
   el.onkeydown = (e) => {
     if (e.key === "Enter") {
@@ -325,6 +365,44 @@ function editTitle(el, n) {
   };
   el.onblur = () => finish(false);
 }
+document.addEventListener("selectionchange", () => {
+  if (!activeTitleEditor) return;
+  const selection = getSelection();
+  const toolbar = $("#rich-text-toolbar");
+  if (
+    !selection.rangeCount ||
+    selection.isCollapsed ||
+    !activeTitleEditor.contains(selection.getRangeAt(0).commonAncestorContainer)
+  ) {
+    toolbar.hidden = true;
+    return;
+  }
+  savedTitleRange = selection.getRangeAt(0).cloneRange();
+  const rect = savedTitleRange.getBoundingClientRect();
+  toolbar.hidden = false;
+  toolbar.style.left = `${Math.max(12, Math.min(innerWidth - toolbar.offsetWidth - 12, rect.left + rect.width / 2 - toolbar.offsetWidth / 2))}px`;
+  toolbar.style.top = `${Math.max(12, rect.top - toolbar.offsetHeight - 10)}px`;
+});
+function applyRichCommand(command, value = null) {
+  if (!activeTitleEditor || !savedTitleRange) return;
+  const selection = getSelection();
+  selection.removeAllRanges();
+  selection.addRange(savedTitleRange);
+  document.execCommand(command, false, value);
+  savedTitleRange = selection.rangeCount
+    ? selection.getRangeAt(0).cloneRange()
+    : null;
+  activeTitleEditor.focus({ preventScroll: true });
+}
+$$("#rich-text-toolbar button").forEach((button) => {
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    if (button.dataset.richCommand)
+      applyRichCommand(button.dataset.richCommand);
+    if (button.dataset.richColor)
+      applyRichCommand("foreColor", button.dataset.richColor);
+  });
+});
 function selectNode(id) {
   selectedNodeId = id;
   selectedEdgeId = null;
@@ -475,6 +553,8 @@ function renderNote() {
   $("#note-text").value = n.note || "";
   $("#note-tags").value = (n.tags || []).join(", ");
   $("#node-font").value = n.font || "indie";
+  $("#node-font-size").value = n.fontSize || 20;
+  $("#node-font-size-output").value = `${n.fontSize || 20}px`;
   const isText = (n.type || "text") === "text";
   $("#node-width-field").hidden = !isText;
   $("#node-size-field").hidden = isText;
@@ -922,7 +1002,9 @@ function updateNodeFromPanel() {
   const n = map().nodes.find((n) => n.id === selectedNodeId);
   if (!n) return;
   snapshot();
-  n.title = $("#note-title").value.trim() || n.title;
+  const nextTitle = $("#note-title").value.trim() || n.title;
+  if (nextTitle !== n.title) delete n.titleHtml;
+  n.title = nextTitle;
   n.note = $("#note-text").value;
   n.tags = $("#note-tags")
     .value.split(",")
@@ -940,6 +1022,21 @@ $("#node-font").onchange = (event) => {
   snapshot();
   node.font = event.target.value;
   renderNodes();
+  renderEdges();
+  scheduleSave();
+};
+$("#node-font-size").onpointerdown = () => snapshot();
+$("#node-font-size").oninput = (event) => {
+  const node = map().nodes.find((item) => item.id === selectedNodeId);
+  if (!node) return;
+  node.fontSize = Number(event.target.value);
+  $("#node-font-size-output").value = `${node.fontSize}px`;
+  const element = $(`.mind-node[data-id="${node.id}"]`);
+  if (element) {
+    element.style.setProperty("--node-font-size", `${node.fontSize}px`);
+    node.renderWidth = element.offsetWidth;
+    node.renderHeight = element.offsetHeight;
+  }
   renderEdges();
   scheduleSave();
 };
