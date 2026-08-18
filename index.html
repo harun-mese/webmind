@@ -108,6 +108,17 @@
             </svg>
           </button>
           <button
+            id="details-toggle"
+            class="icon-button"
+            title="Fikir detaylarını aç/kapat"
+            aria-label="Fikir detaylarını aç/kapat"
+            aria-pressed="false"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16v14H4zM14 5v14M7 9h4M7 13h4" />
+            </svg>
+          </button>
+          <button
             id="export-btn"
             class="icon-button"
             title="JSON olarak dışa aktar"
@@ -617,6 +628,32 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="item-context-menu" class="item-context-menu" hidden>
+      <button type="button" data-detail-section="content">
+        <span>✎</span
+        ><span
+          ><strong>Metinler</strong
+          ><small>Başlık, alt başlık ve not</small></span
+        >
+      </button>
+      <button type="button" data-detail-section="appearance">
+        <span>◐</span
+        ><span><strong>Görünüm</strong><small>Renk, font ve stil</small></span>
+      </button>
+      <button type="button" data-detail-section="layout">
+        <span>↕</span
+        ><span
+          ><strong>Yerleşim</strong><small>Sıra, hizalama ve boyut</small></span
+        >
+      </button>
+      <button type="button" data-detail-section="link">
+        <span>↗</span
+        ><span
+          ><strong>Bağlantı</strong><small>Harici içeriği değiştir</small></span
+        >
+      </button>
+    </div>
 
     <div
       id="rich-text-toolbar"

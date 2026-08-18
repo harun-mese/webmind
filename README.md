@@ -16,6 +16,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
 - Alt başlığı canvas üzerinde çift tıklayarak doğrudan düzenleyebilme
 - Yalnızca gerçek tıklamada açılan detay paneli ve panelden düzenlenebilen harici öğe bağlantıları
+- Header detay toggle’ı ve More düğmesinden açılan öğe ayarları context menüsü
 - Mobilde tam yükseklik harita drawer’ı ve seçili öğedeki More düğmesinden açılan bottom sheet detayları
 - Mobil canvas üzerinde iki parmakla merkeze sabit pinch-to-zoom desteği
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma

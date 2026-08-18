@@ -319,7 +319,7 @@ function renderNodes() {
       );
       el.querySelector(".node-more").addEventListener("click", (event) => {
         event.stopPropagation();
-        selectNode(el.dataset.id);
+        openItemContextMenu(el.dataset.id, event.currentTarget);
       });
       el.querySelector(".node-resize-handle")?.addEventListener(
         "pointerdown",
@@ -645,13 +645,22 @@ function selectNode(id) {
   $("#note-panel").classList.add("open");
 }
 function selectNodeWithoutReplacingDraggedElement(id) {
+  const detailsOpen = $("#note-panel").classList.contains("open");
   selectedNodeId = id;
   selectedEdgeId = null;
   $$(".mind-node").forEach((node) =>
     node.classList.toggle("selected", node.dataset.id === id),
   );
   renderEdges();
-  $("#note-panel").classList.remove("open");
+  if (detailsOpen) renderNote();
+}
+function openItemContextMenu(id, anchor) {
+  selectNodeWithoutReplacingDraggedElement(id);
+  const menu = $("#item-context-menu");
+  const rect = anchor.getBoundingClientRect();
+  menu.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - 260))}px`;
+  menu.style.top = `${Math.max(12, Math.min(rect.bottom + 8, innerHeight - 300))}px`;
+  menu.hidden = false;
 }
 function onNodeDown(e) {
   if (
@@ -796,6 +805,7 @@ function nodeEditableLink(node) {
 function renderNote() {
   const n = map().nodes.find((n) => n.id === selectedNodeId);
   $("#note-panel").classList.toggle("open", !!n);
+  syncDetailsToggle();
   $(".note-empty").hidden = !!n;
   $(".note-content").hidden = !n;
   if (!n) return;
@@ -1371,6 +1381,46 @@ $("#settings-btn").onclick = () => {
   renderSettings();
   $("#settings-popover").hidden = !$("#settings-popover").hidden;
 };
+function syncDetailsToggle() {
+  const open = $("#note-panel").classList.contains("open");
+  $("#details-toggle").setAttribute("aria-pressed", String(open));
+  $("#details-toggle").classList.toggle("active", open);
+}
+$("#details-toggle").onclick = () => {
+  const panel = $("#note-panel");
+  if (panel.classList.contains("open")) {
+    panel.classList.remove("open");
+  } else if (selectedNodeId) {
+    renderNote();
+    panel.classList.add("open");
+  } else {
+    toast("Önce bir öğe seç.");
+  }
+  syncDetailsToggle();
+};
+$$("#item-context-menu [data-detail-section]").forEach((button) => {
+  button.onclick = () => {
+    if (!selectedNodeId) return;
+    const targets = {
+      content: "#note-title",
+      appearance: ".color-row",
+      layout: "#node-layout-field",
+      link: "#node-link-field",
+    };
+    selectNode(selectedNodeId);
+    syncDetailsToggle();
+    $("#item-context-menu").hidden = true;
+    requestAnimationFrame(() => {
+      let target = $(targets[button.dataset.detailSection]);
+      if (!target || target.hidden) {
+        toast("Bu ayar seçili öğe için kullanılamıyor.");
+        target = $("#note-title");
+      }
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.matches("input,textarea,select") && target.focus();
+    });
+  };
+});
 $$("[data-style-group]").forEach(
   (select) =>
     (select.onchange = () => {
@@ -1432,10 +1482,13 @@ function closeFloatingPanels(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (
     target?.closest(".popover") ||
-    target?.closest("#appearance-btn,#settings-btn")
+    target?.closest(
+      "#appearance-btn,#settings-btn,.node-more,#item-context-menu",
+    )
   )
     return;
   $$(".popover").forEach((popover) => (popover.hidden = true));
+  $("#item-context-menu").hidden = true;
 }
 document.addEventListener("pointerdown", closeFloatingPanels, true);
 $("#item-dialog").addEventListener("pointerdown", (event) => {
@@ -1680,6 +1733,7 @@ $$("#image-shape-options button").forEach(
 );
 $("#close-note").onclick = () => {
   $("#note-panel").classList.remove("open");
+  syncDetailsToggle();
   selectedNodeId = null;
   renderAll();
 };
@@ -1760,6 +1814,7 @@ window.addEventListener("keydown", (e) => {
   }
   if (e.key === "Escape") {
     $$(".popover").forEach((x) => (x.hidden = true));
+    $("#item-context-menu").hidden = true;
   }
 });
 $("#export-btn").onclick = () => {
