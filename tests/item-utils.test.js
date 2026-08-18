@@ -101,17 +101,27 @@ test("curved edges expose a directional tangent for arrow markers", () => {
     { type: "text", x: 0, y: 200 },
     { type: "text", x: 0, y: 0 },
   );
-  assert.equal(down, "M78,74 C59.76,112.76 59.76,149.24 78,188");
-  assert.equal(up, "M78,188 C96.24,149.24 96.24,112.76 78,74");
+  assert.equal(
+    down,
+    "M78,74 C78,112.76 59.76,113.56 59.76,131 C59.76,148.44 78,149.24 78,188",
+  );
+  assert.equal(
+    up,
+    "M78,188 C78,149.24 96.24,148.44 96.24,131 C96.24,113.56 78,112.76 78,74",
+  );
 
   const diagonal = buildEdgePath(
     { type: "text", x: 0, y: 0 },
     { type: "text", x: 160, y: 100 },
   );
   const values = diagonal.match(/-?\d+(?:\.\d+)?/g).map(Number);
-  const [, , , , controlX, controlY, endX, endY] = values;
-  assert.notEqual(controlX, endX);
-  assert.notEqual(controlY, endY);
+  const controlX = values.at(-4);
+  const controlY = values.at(-3);
+  const endX = values.at(-2);
+  const endY = values.at(-1);
+  const tangentX = endX - controlX;
+  const tangentY = endY - controlY;
+  assert.ok(Math.abs(tangentX * 100 - tangentY * 160) < 1);
 });
 
 test("vertical elbow paths enter from the top or bottom edge", () => {

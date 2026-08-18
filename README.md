@@ -32,7 +32,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Metin kartlarında sürüklenebilir genişlik tutamacı; medya kartlarında small, medium ve large boyutları
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
-- Bağlantı eğrisinin teğetine ve gerçek öğe açısına otomatik dönen ok uçları
+- Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
 - Noktalı, kareli, çizgili veya boş canvas deseni ve özelleştirilebilir renkler
 - Her öğe için yumuşak kart, yapışkan not, çizgisel veya cam görünüm stili
 - Metin, görsel, YouTube ve dosya grupları için ayrı toplu stil varsayılanları

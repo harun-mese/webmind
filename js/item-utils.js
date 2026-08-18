@@ -85,11 +85,18 @@ export function buildEdgePath(source, target, style = "curved") {
   const curve = Math.min(72, Math.max(0, pathDistance * 0.16));
   const normalX = -unitY;
   const normalY = unitX;
-  const control1X = round(x1 + unitX * travel + normalX * curve);
-  const control1Y = round(y1 + unitY * travel + normalY * curve);
-  const control2X = round(x2 - unitX * travel + normalX * curve);
-  const control2Y = round(y2 - unitY * travel + normalY * curve);
-  return `M${x1},${y1} C${control1X},${control1Y} ${control2X},${control2Y} ${x2},${y2}`;
+  const middleX = round((x1 + x2) / 2 + normalX * curve);
+  const middleY = round((y1 + y2) / 2 + normalY * curve);
+  const middleHandle = Math.min(48, travel * 0.45);
+  const control1X = round(x1 + unitX * travel);
+  const control1Y = round(y1 + unitY * travel);
+  const middleInX = round(middleX - unitX * middleHandle);
+  const middleInY = round(middleY - unitY * middleHandle);
+  const middleOutX = round(middleX + unitX * middleHandle);
+  const middleOutY = round(middleY + unitY * middleHandle);
+  const control2X = round(x2 - unitX * travel);
+  const control2Y = round(y2 - unitY * travel);
+  return `M${x1},${y1} C${control1X},${control1Y} ${middleInX},${middleInY} ${middleX},${middleY} C${middleOutX},${middleOutY} ${control2X},${control2Y} ${x2},${y2}`;
 }
 
 export function readableInk(hexColor) {

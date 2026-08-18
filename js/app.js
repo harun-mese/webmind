@@ -848,7 +848,7 @@ function renderEdges() {
         : edge.lineStyle === "dotted"
           ? "2 7"
           : "";
-    g.innerHTML = `<path class="edge-hit" d="${p}"/><path class="edge-visible" d="${p}" style="--edge-color:${edge.color};stroke-dasharray:${dash}" ${["forward", "both"].includes(edge.direction) ? 'marker-end="url(#arrow-end)"' : ""} ${["backward", "both"].includes(edge.direction) ? 'marker-start="url(#arrow-start)"' : ""}/>`;
+    g.innerHTML = `<path class="edge-hit" d="${p}"/><path class="edge-visible" d="${p}" style="--edge-color:${edge.color};--edge-width:${edge.width || 2};stroke-dasharray:${dash}" ${["forward", "both"].includes(edge.direction) ? 'marker-end="url(#arrow-end)"' : ""} ${["backward", "both"].includes(edge.direction) ? 'marker-start="url(#arrow-start)"' : ""}/>`;
     g.addEventListener("click", (e) => {
       e.stopPropagation();
       selectEdge(edge.id, e.clientX, e.clientY);
@@ -887,6 +887,8 @@ function renderEdges() {
 function syncEdgePopover(edge) {
   $("#edge-label").value = edge.label || "";
   $("#edge-color").value = edge.color;
+  $("#edge-width").value = edge.width || 2;
+  $("#edge-width-output").value = `${edge.width || 2}px`;
   $$("#edge-direction button").forEach((b) =>
     b.classList.toggle("active", b.dataset.direction === edge.direction),
   );
@@ -1200,6 +1202,7 @@ window.addEventListener("pointerup", (e) => {
         direction: "forward",
         lineStyle: "solid",
         pathStyle: "curved",
+        width: 2,
       });
       scheduleSave();
     } else history.pop();
@@ -1745,6 +1748,15 @@ function updateSelectedEdge(key, value) {
 $("#edge-label").onchange = (e) =>
   updateSelectedEdge("label", e.target.value.trim());
 $("#edge-color").onchange = (e) => updateSelectedEdge("color", e.target.value);
+$("#edge-width").onpointerdown = () => snapshot();
+$("#edge-width").oninput = (event) => {
+  const edge = map().edges.find((item) => item.id === selectedEdgeId);
+  if (!edge) return;
+  edge.width = Number(event.target.value);
+  $("#edge-width-output").value = `${edge.width}px`;
+  renderEdges();
+  scheduleSave();
+};
 $$("#edge-direction button").forEach(
   (b) =>
     (b.onclick = () => updateSelectedEdge("direction", b.dataset.direction)),
