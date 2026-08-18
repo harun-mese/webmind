@@ -255,9 +255,12 @@ function renderNodes() {
     const nodeText = hasVisibleColor
       ? readableInk(n.color)
       : "var(--canvas-ink)";
+    const playerInk = hasVisibleColor
+      ? n.color
+      : readableInk(map().appearance.textColor || map().appearance.canvasColor);
     el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasVisibleColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
-    el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
+    el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--player-ink:${playerInk};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
     el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
     const title = el.querySelector(".node-title");
     if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
@@ -305,13 +308,26 @@ function renderNodeMedia(node) {
   if (node.type === "music" && node.youtubeId)
     return `<div class="node-media"><iframe class="music-youtube" src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.youtubeId)}" title="${escapeAttribute(node.title)}" loading="lazy" allow="autoplay; encrypted-media"></iframe></div>`;
   if (["music", "recording"].includes(node.type) && node.mediaUrl)
-    return renderAudioPlayer(node, node.type === "recording" ? "●" : "♫");
+    return renderAudioPlayer(node);
   if (node.type === "file")
     return `<div class="node-media file-card"><span class="file-card-icon">${fileIcon(node.fileType)}</span><span class="file-card-meta"><span class="file-card-name">${escapeHtml(node.fileName || "Dosya")}</span><span class="file-card-size">${formatBytes(node.fileSize || 0)}</span></span></div>`;
   return "";
 }
-function renderAudioPlayer(node, icon) {
-  return `<div class="node-media music-card ${node.type === "recording" ? "recording-card" : ""}"><span class="music-art">${icon}</span><div class="audio-player"><button type="button" class="audio-toggle" aria-label="Oynat">▶</button><div class="audio-track"><input class="audio-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Oynatma konumu"><div class="audio-time"><time class="audio-current">0:00</time><time class="audio-duration">0:00</time></div></div><audio src="${escapeAttribute(node.mediaUrl)}" preload="metadata"></audio></div></div>`;
+function renderAudioPlayer(node) {
+  const mediaIcon = node.type === "recording" ? microphoneIcon() : musicIcon();
+  return `<div class="node-media music-card ${node.type === "recording" ? "recording-card" : ""}"><div class="audio-player"><span class="audio-kind-icon">${mediaIcon}</span><button type="button" class="audio-toggle" aria-label="Oynat">${playIcon()}</button><div class="audio-track"><input class="audio-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Oynatma konumu"><div class="audio-time"><time class="audio-current">0:00</time><time class="audio-duration">0:00</time></div></div><audio src="${escapeAttribute(node.mediaUrl)}" preload="metadata"></audio></div></div>`;
+}
+function playIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 7 8 5-8 5Z"/></svg>';
+}
+function pauseIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7v10M15 7v10"/></svg>';
+}
+function musicIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12M9 10l10-2"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>';
+}
+function microphoneIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>';
 }
 function mediaTime(seconds) {
   if (!Number.isFinite(seconds)) return "0:00";
@@ -327,10 +343,12 @@ function bindMediaControls(element) {
     const sync = () => {
       current.textContent = mediaTime(audio.currentTime);
       duration.textContent = mediaTime(audio.duration);
-      progress.value = audio.duration
+      const percent = audio.duration
         ? (audio.currentTime / audio.duration) * 100
         : 0;
-      toggle.textContent = audio.paused ? "▶" : "Ⅱ";
+      progress.value = percent;
+      progress.style.setProperty("--audio-progress", `${percent}%`);
+      toggle.innerHTML = audio.paused ? playIcon() : pauseIcon();
       toggle.setAttribute("aria-label", audio.paused ? "Oynat" : "Duraklat");
     };
     toggle.onclick = () => (audio.paused ? audio.play() : audio.pause());

@@ -2181,3 +2181,107 @@ body.sidebar-open .zoom-controls {
 .mind-node.no-color {
   color: var(--canvas-ink, var(--ink));
 }
+
+/* Refined minimal music and recording player */
+.music-card {
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--node-text), transparent 88%);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--node-color), white 38%);
+}
+.mind-node.no-color .music-card {
+  background: color-mix(in srgb, var(--canvas-ink), transparent 94%);
+}
+.audio-player {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 30px 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+.audio-kind-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--node-text), transparent 91%);
+  color: var(--node-text);
+}
+.audio-kind-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.audio-toggle {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--node-text);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--node-text), transparent 78%);
+  color: var(--player-ink);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+.audio-toggle:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--node-text), transparent 70%);
+}
+.audio-toggle:active {
+  transform: scale(0.94);
+}
+.audio-toggle:focus-visible {
+  outline: 2px solid var(--node-text);
+  outline-offset: 3px;
+}
+.audio-toggle svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.audio-progress {
+  --audio-progress: 0%;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--node-text) 0 var(--audio-progress),
+    color-mix(in srgb, var(--node-text), transparent 82%) var(--audio-progress)
+      100%
+  );
+  outline: 0;
+}
+.audio-progress::-webkit-slider-thumb {
+  width: 11px;
+  height: 11px;
+  appearance: none;
+  border: 2px solid var(--player-ink);
+  border-radius: 50%;
+  background: var(--node-text);
+  box-shadow: 0 1px 4px rgba(30, 26, 21, 0.18);
+}
+.audio-progress::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--player-ink);
+  border-radius: 50%;
+  background: var(--node-text);
+}
+.audio-time {
+  margin-top: 6px;
+  font-size: 9px;
+}

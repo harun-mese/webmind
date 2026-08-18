@@ -9,6 +9,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Faviconlu web sitesi kartları, Google Maps konumları ve oynatılabilir müzik öğeleri
 - Dosya veya bağlantıdan görsel; dosya, doğrudan ses URL'si veya YouTube'dan müzik ekleme
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
+- Sade SVG kontrolleri, ilerleme çizgisi ve süre göstergeli özel ses oynatıcı
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli
 - Ayrı dairesel kontrollerden oluşan şeffaf ve minimal araç çubuğu
 - Düğüm başlığını çift tıklayarak düzenleme ve düğümleri sürükleme
