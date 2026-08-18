@@ -4,6 +4,7 @@ import {
   buildEdgePath,
   formatBytes,
   nodeDimensions,
+  readableInk,
   youtubeId,
 } from "../js/item-utils.js";
 
@@ -56,8 +57,8 @@ test("vertical curves approach the target vertically", () => {
     { type: "text", x: 0, y: 200 },
     { type: "text", x: 0, y: 0 },
   );
-  assert.equal(down, "M78,62 C78,131 78,131 78,200");
-  assert.equal(up, "M78,200 C78,131 78,131 78,62");
+  assert.equal(down, "M78,74 C78,131 78,131 78,188");
+  assert.equal(up, "M78,188 C78,131 78,131 78,74");
 });
 
 test("vertical elbow paths enter from the top or bottom edge", () => {
@@ -67,6 +68,12 @@ test("vertical elbow paths enter from the top or bottom edge", () => {
       { type: "text", x: 100, y: 200 },
       "elbow",
     ),
-    "M78,62 L78,131 L178,131 L178,200",
+    "M78,74 L78,131 L178,131 L178,188",
   );
+});
+
+test("toolbar ink remains readable against light and dark canvases", () => {
+  assert.equal(readableInk("#fbf8f0"), "#292722");
+  assert.equal(readableInk("#17181b"), "#fffdf8");
+  assert.equal(readableInk("invalid"), "#302e29");
 });

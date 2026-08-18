@@ -3,6 +3,7 @@ import {
   buildEdgePath,
   formatBytes,
   nodeDimensions,
+  readableInk,
   youtubeId,
 } from "./item-utils.js";
 const $ = (s) => document.querySelector(s),
@@ -22,16 +23,23 @@ const defaults = {
   pattern: "dots",
   spacing: 24,
   arrowColor: "#6d685f",
+  itemStyles: {
+    text: "soft",
+    image: "glass",
+    youtube: "outline",
+    file: "note",
+  },
 };
 const initialMap = () => ({
   id: uid(),
   title: "İlk Haritam",
-  appearance: { ...defaults },
+  appearance: { ...defaults, itemStyles: { ...defaults.itemStyles } },
   viewport: { x: 0, y: 0, zoom: 1 },
   nodes: [
     {
       id: uid(),
       type: "text",
+      style: "soft",
       title: "Ana fikir",
       x: 340,
       y: 220,
@@ -97,6 +105,7 @@ function screenToWorld(clientX, clientY) {
 function renderAll() {
   renderMaps();
   renderAppearance();
+  renderSettings();
   renderNodes();
   renderEdges();
   renderNote();
@@ -123,11 +132,22 @@ function renderMaps() {
 }
 function renderAppearance() {
   const a = map().appearance;
+  a.itemStyles ||= structuredClone(defaults.itemStyles);
   canvas.className = `canvas pattern-${a.pattern}`;
   canvas.style.setProperty("--canvas", a.canvasColor);
   canvas.style.setProperty("--pattern", a.patternColor);
   canvas.style.setProperty("--spacing", `${a.spacing}px`);
   canvas.style.setProperty("--arrow", a.arrowColor);
+  const toolbarInk = readableInk(a.canvasColor);
+  document.documentElement.style.setProperty("--toolbar-ink", toolbarInk);
+  document.documentElement.style.setProperty(
+    "--toolbar-on-ink",
+    toolbarInk === "#fffdf8" ? "#292722" : "#fffdf8",
+  );
+  document.documentElement.style.setProperty(
+    "--toolbar-hover",
+    toolbarInk === "#fffdf8" ? "rgba(255,255,255,.14)" : "rgba(48,46,41,.09)",
+  );
   $("#canvas-color").value = a.canvasColor;
   $("#pattern-color").value = a.patternColor;
   $("#pattern-spacing").value = a.spacing;
@@ -137,13 +157,20 @@ function renderAppearance() {
     b.classList.toggle("active", b.dataset.pattern === a.pattern),
   );
 }
+function renderSettings() {
+  const styles = map().appearance.itemStyles || defaults.itemStyles;
+  $$("[data-style-group]").forEach((select) => {
+    select.value = styles[select.dataset.styleGroup] || "soft";
+  });
+}
 function renderNodes() {
   nodeLayer.style.transform = currentTransform();
   nodeLayer.innerHTML = "";
   map().nodes.forEach((n) => {
     const el = document.createElement("article");
     const type = n.type || "text";
-    el.className = `mind-node item-${type} style-${n.style || "soft"} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
+    const style = n.style || map().appearance.itemStyles?.[type] || "soft";
+    el.className = `mind-node item-${type} style-${style} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${n.color}`;
     el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>`;
@@ -399,6 +426,8 @@ canvas.addEventListener("dblclick", (e) => {
   snapshot();
   const n = {
     id: uid(),
+    type: "text",
+    style: map().appearance.itemStyles?.text || "soft",
     title: "Yeni fikir",
     x: p.x - 78,
     y: p.y - 31,
@@ -559,6 +588,7 @@ async function createItemFromDialog() {
     node = {
       id: uid(),
       type,
+      style: map().appearance.itemStyles?.[type] || "soft",
       title:
         $("#item-title").value.trim() ||
         {
@@ -608,7 +638,45 @@ $("#item-form").onsubmit = async (event) => {
   }
 };
 $("#appearance-btn").onclick = () => {
+  $("#settings-popover").hidden = true;
   $("#appearance-popover").hidden = !$("#appearance-popover").hidden;
+};
+$("#settings-btn").onclick = () => {
+  $("#appearance-popover").hidden = true;
+  renderSettings();
+  $("#settings-popover").hidden = !$("#settings-popover").hidden;
+};
+$$("[data-style-group]").forEach(
+  (select) =>
+    (select.onchange = () => {
+      const group = select.dataset.styleGroup;
+      snapshot();
+      map().appearance.itemStyles ||= { ...defaults.itemStyles };
+      map().appearance.itemStyles[group] = select.value;
+      if ($("#apply-group-existing").checked) {
+        map()
+          .nodes.filter((node) => (node.type || "text") === group)
+          .forEach((node) => (node.style = select.value));
+      }
+      renderNodes();
+      renderNote();
+      scheduleSave();
+    }),
+);
+$("#apply-all-style").onclick = () => {
+  const style = $("#all-item-style").value;
+  if (!style) {
+    toast("Önce tüm öğeler için bir stil seç.");
+    return;
+  }
+  snapshot();
+  map().appearance.itemStyles = Object.fromEntries(
+    Object.keys(defaults.itemStyles).map((group) => [group, style]),
+  );
+  map().nodes.forEach((node) => (node.style = style));
+  renderAll();
+  scheduleSave();
+  toast("Stil tüm öğelere uygulandı.");
 };
 function closeSidebar() {
   $(".sidebar").classList.remove("open");

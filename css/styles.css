@@ -235,7 +235,7 @@ button {
   overflow: hidden;
   touch-action: none;
   cursor: grab;
-  background-color: var(--canvas);
+  background-color: var(--toolbar-on-ink);
 }
 .canvas:active {
   cursor: grabbing;
@@ -1391,4 +1391,95 @@ body.sidebar-open #sidebar-toggle {
 }
 .note-empty {
   display: none;
+}
+
+/* Contrast-aware icon toolbar and wider map drawer */
+:root {
+  --toolbar-ink: #292722;
+  --toolbar-hover: rgba(48, 46, 41, 0.09);
+}
+.topbar .icon-button,
+.topbar .file-label {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--toolbar-ink);
+  backdrop-filter: none;
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+.topbar .icon-button:hover,
+.topbar .file-label:hover {
+  border: 0;
+  background: var(--toolbar-hover);
+  color: var(--toolbar-ink);
+  transform: scale(1.06);
+}
+.topbar .icon-button:active,
+.topbar .file-label:active {
+  transform: scale(0.94);
+}
+.topbar .icon-button:focus-visible,
+.topbar .file-label:focus-visible {
+  outline: 2px solid var(--toolbar-ink);
+  outline-offset: 2px;
+}
+.topbar .primary-button,
+.topbar .primary-button:hover {
+  background: var(--toolbar-ink);
+  color: var(--toolbar-on-ink);
+}
+.sidebar {
+  width: 276px;
+}
+.sidebar-tip {
+  width: calc(100% - 24px);
+}
+body.sidebar-open .zoom-controls {
+  left: 308px;
+}
+.settings-popover {
+  top: 70px;
+  right: 16px;
+  width: 310px;
+}
+.settings-description {
+  margin: -4px 0 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.settings-popover select {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+}
+.settings-apply {
+  width: 100%;
+  margin: -5px 0 17px;
+  padding: 9px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--ink);
+  color: white;
+}
+.settings-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  padding-top: 4px;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+.settings-check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
 }

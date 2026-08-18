@@ -13,6 +13,8 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
 - Noktalı, kareli, çizgili veya boş canvas deseni ve özelleştirilebilir renkler
 - Her öğe için yumuşak kart, yapışkan not, çizgisel veya cam görünüm stili
+- Metin, görsel, YouTube ve dosya grupları için ayrı toplu stil varsayılanları
+- Canvas rengine göre otomatik kontrast sağlayan bordersız araç ikonları
 - Her fikir için not, etiket ve renk
 - IndexedDB ile otomatik kayıt ve undo/redo
 - JSON yedekleme ve geri yükleme

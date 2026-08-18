@@ -22,13 +22,14 @@ export function buildEdgePath(source, target, style = "curved") {
   const dx = x2 - x1;
   const dy = y2 - y1;
   const horizontal = Math.abs(dx) > Math.abs(dy);
+  const gap = 12;
 
   if (horizontal) {
-    x1 += (Math.sign(dx) * sourceSize.width) / 2;
-    x2 -= (Math.sign(dx) * targetSize.width) / 2;
+    x1 += Math.sign(dx) * (sourceSize.width / 2 + gap);
+    x2 -= Math.sign(dx) * (targetSize.width / 2 + gap);
   } else {
-    y1 += (Math.sign(dy) * sourceSize.height) / 2;
-    y2 -= (Math.sign(dy) * targetSize.height) / 2;
+    y1 += Math.sign(dy) * (sourceSize.height / 2 + gap);
+    y2 -= Math.sign(dy) * (targetSize.height / 2 + gap);
   }
 
   if (style === "straight") return `M${x1},${y1} L${x2},${y2}`;
@@ -50,6 +51,33 @@ export function buildEdgePath(source, target, style = "curved") {
     Math.max(18, Math.abs(y2 - y1) / 2),
   );
   return `M${x1},${y1} C${x1},${y1 + Math.sign(dy || 1) * bend} ${x2},${y2 - Math.sign(dy || 1) * bend} ${x2},${y2}`;
+}
+
+export function readableInk(hexColor) {
+  const hex = hexColor.replace("#", "");
+  if (!/^[\da-f]{6}$/i.test(hex)) return "#302e29";
+  const luminance = relativeLuminance(hex);
+  const dark = "292722";
+  const light = "fffdf8";
+  const darkContrast = contrastRatio(luminance, relativeLuminance(dark));
+  const lightContrast = contrastRatio(luminance, relativeLuminance(light));
+  return darkContrast >= lightContrast ? `#${dark}` : `#${light}`;
+}
+
+function relativeLuminance(hex) {
+  return [0, 2, 4]
+    .map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255)
+    .map((channel) =>
+      channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+    )
+    .reduce(
+      (sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index],
+      0,
+    );
+}
+
+function contrastRatio(first, second) {
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 }
 
 export function youtubeId(value) {

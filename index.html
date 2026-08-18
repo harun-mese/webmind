@@ -89,6 +89,19 @@
             </svg>
           </button>
           <button
+            id="settings-btn"
+            class="icon-button"
+            title="Stil ayarları"
+            aria-label="Stil ayarları"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h10M18 6h2M4 12h2m4 0h10M4 18h7m4 0h5" />
+              <circle cx="16" cy="6" r="2" />
+              <circle cx="8" cy="12" r="2" />
+              <circle cx="13" cy="18" r="2" />
+            </svg>
+          </button>
+          <button
             id="export-btn"
             class="icon-button"
             title="JSON olarak dışa aktar"
@@ -294,6 +307,66 @@
       /></label>
       <hr />
       <label>Varsayılan ok rengi<input id="arrow-color" type="color" /></label>
+    </div>
+
+    <div id="settings-popover" class="popover settings-popover" hidden>
+      <div class="popover-title">
+        <strong>Öğe stilleri</strong
+        ><button class="popover-close" aria-label="Kapat">×</button>
+      </div>
+      <p class="settings-description">
+        Yeni öğeler için varsayılan görünümü belirle veya mevcut gruba topluca
+        uygula.
+      </p>
+      <label
+        >Tüm öğeler<select id="all-item-style">
+          <option value="">Karışık / değiştirme</option>
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+        </select></label
+      >
+      <button id="apply-all-style" class="settings-apply">
+        Tüm mevcut öğelere uygula
+      </button>
+      <hr />
+      <label
+        >Metin öğeleri<select data-style-group="text">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+        </select></label
+      >
+      <label
+        >Görseller<select data-style-group="image">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+        </select></label
+      >
+      <label
+        >YouTube videoları<select data-style-group="youtube">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+        </select></label
+      >
+      <label
+        >Dosyalar<select data-style-group="file">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+        </select></label
+      >
+      <label class="settings-check"
+        ><input id="apply-group-existing" type="checkbox" checked /> Değişikliği
+        mevcut grup öğelerine de uygula</label
+      >
     </div>
 
     <div id="edge-popover" class="popover edge-popover" hidden>
