@@ -19,6 +19,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Yalnızca gerçek tıklamada açılan detay paneli ve panelden düzenlenebilen harici öğe bağlantıları
 - Header detay toggle’ı ve More düğmesinden açılan öğe ayarları context menüsü
 - Detay panelinden bağımsız, context menü seçenekleri için merkezde açılan öğe ayarları modalı
+- Blur kullanmayan, değişiklikleri anında canvas’a yansıtan ve görsel stil presetleri sunan ayar modalı
 - Canvas tıklamalarından etkilenmeyen, yalnızca header toggle ile açılıp kapanan detay paneli
 - Mobilde tam yükseklik harita drawer’ı ve seçili öğedeki More düğmesinden açılan bottom sheet detayları
 - Mobil canvas üzerinde iki parmakla merkeze sabit pinch-to-zoom desteği

@@ -131,7 +131,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   renderedMap = null,
   suppressNodeClick = null,
   pinch = null,
-  itemSettingsSection = null;
+  itemSettingsSection = null,
+  itemSettingsDirty = false;
 const touchPoints = new Map();
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
@@ -287,7 +288,7 @@ function renderNodes() {
     if (isNew) {
       el = document.createElement("article");
       el.dataset.id = n.id;
-      el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><div class="node-subtitle"></div><button class="connector"></button><button class="node-more" type="button" aria-label="Öğe detaylarını aç"><svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/></svg></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
+      el.innerHTML = `${renderNodeMedia(n)}<div class="node-copy"><div class="node-title"></div><div class="node-subtitle"></div></div><button class="connector"></button><button class="node-more" type="button" aria-label="Öğe detaylarını aç"><svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/></svg></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
       el.addEventListener("pointerdown", onNodeDown);
       el.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -301,9 +302,7 @@ function renderNodes() {
         event.stopPropagation();
         const node = map().nodes.find((item) => item.id === el.dataset.id);
         if (!node) return;
-        const subtitle = event.target.closest(".node-subtitle");
-        if (subtitle) editSubtitle(subtitle, node, event);
-        else editTitle(el.querySelector(".node-title"), node, event);
+        editNodeCopy(el.querySelector(".node-copy"), node, event);
       });
       el.querySelector(".connector").addEventListener(
         "pointerdown",
@@ -660,6 +659,63 @@ function editSubtitle(element, node, event = null) {
   };
   element.onblur = () => finish(false);
 }
+function editNodeCopy(element, node, event = null) {
+  const title = element.querySelector(".node-title");
+  const subtitle = element.querySelector(".node-subtitle");
+  const original = {
+    title: node.title || "",
+    subtitle: node.subtitle || "",
+    titleHtml: node.titleHtml || escapeHtml(node.title || ""),
+    subtitleHtml: node.subtitleHtml || escapeHtml(node.subtitle || ""),
+  };
+  let finished = false;
+  element.contentEditable = "true";
+  element.focus();
+  activeTitleEditor = element;
+  selectEditorContent(element, event);
+  const finish = (cancel = false) => {
+    if (finished) return;
+    finished = true;
+    $("#rich-text-toolbar").hidden = true;
+    activeTitleEditor = null;
+    savedTitleRange = null;
+    element.contentEditable = "false";
+    const nextTitle = title.textContent.trim();
+    const nextSubtitle = subtitle.textContent.trim();
+    const titleHtml = sanitizeRichText(title.innerHTML);
+    const subtitleHtml = sanitizeRichText(subtitle.innerHTML);
+    if (
+      !cancel &&
+      (nextTitle !== original.title ||
+        nextSubtitle !== original.subtitle ||
+        titleHtml !== original.titleHtml ||
+        subtitleHtml !== original.subtitleHtml)
+    ) {
+      snapshot();
+      node.title = nextTitle;
+      node.subtitle = nextSubtitle;
+      node.titleHtml = nextTitle ? titleHtml : "";
+      node.subtitleHtml = nextSubtitle ? subtitleHtml : "";
+      scheduleSave();
+      renderNodes();
+      renderEdges();
+      renderNote();
+    } else {
+      title.innerHTML = original.titleHtml;
+      subtitle.innerHTML = original.subtitleHtml;
+    }
+  };
+  element.onkeydown = (keyboardEvent) => {
+    if (keyboardEvent.key === "Enter") {
+      keyboardEvent.preventDefault();
+      document.execCommand("insertLineBreak");
+    } else if (keyboardEvent.key === "Escape") {
+      keyboardEvent.preventDefault();
+      finish(true);
+    }
+  };
+  element.onblur = () => finish(false);
+}
 document.addEventListener("selectionchange", () => {
   if (!activeTitleEditor) return;
   const selection = getSelection();
@@ -1002,8 +1058,8 @@ canvas.addEventListener("dblclick", (e) => {
   renderAll();
   scheduleSave();
   setTimeout(() => {
-    const el = $(`.mind-node[data-id="${n.id}"] .node-title`);
-    editTitle(el, n);
+    const el = $(`.mind-node[data-id="${n.id}"] .node-copy`);
+    editNodeCopy(el, n);
   }, 0);
 });
 canvas.addEventListener("pointerdown", (e) => {
@@ -1026,13 +1082,10 @@ canvas.addEventListener("pointerdown", (e) => {
       return;
     }
   }
-  const detailsOpen = $("#note-panel").classList.contains("open");
-  if (!detailsOpen) selectedNodeId = selectedEdgeId = null;
+  selectedNodeId = selectedEdgeId = null;
   $("#edge-popover").hidden = true;
-  if (!detailsOpen) {
-    $$(".mind-node").forEach((node) => node.classList.remove("selected"));
-    renderNote();
-  }
+  $$(".mind-node").forEach((node) => node.classList.remove("selected"));
+  renderNote();
   renderEdges();
   pan = {
     x: e.clientX,
@@ -1464,6 +1517,7 @@ function openItemSettingsDialog(section) {
   const node = map().nodes.find((item) => item.id === selectedNodeId);
   if (!node) return;
   itemSettingsSection = section;
+  itemSettingsDirty = false;
   const fields = $("#item-settings-fields");
   const titles = {
     content: "Metinler",
@@ -1484,20 +1538,7 @@ function openItemSettingsDialog(section) {
         ["rounded", "Rounded"],
       ],
       node.font || "indie",
-    )}</select></label><label>Stil<select name="style">${selectOptions(
-      [
-        ["soft", "Yumuşak"],
-        ["note", "Not"],
-        ["outline", "Çizgi"],
-        ["glass", "Cam"],
-        ["none", "None"],
-        ["borderless", "Borderless"],
-        ["pill", "Kapsül"],
-        ["sketch", "Eskiz"],
-        ["solid", "Dolu"],
-      ],
-      node.style || "soft",
-    )}</select></label>`;
+    )}</select></label><fieldset class="live-style-presets"><legend>Stil önizlemeleri</legend><div>${["soft", "note", "outline", "glass", "none", "borderless", "pill", "sketch", "solid"].map((style) => `<label class="style-preset-preview preview-${style}" title="${style}"><input type="radio" name="style" value="${style}" ${style === (node.style || "soft") ? "checked" : ""}><span><i></i><b></b></span></label>`).join("")}</div></fieldset>`;
   } else if (section === "layout") {
     fields.innerHTML = `<label>Hizalama<select name="align">${selectOptions(
       [
@@ -1549,41 +1590,50 @@ $$("#item-context-menu [data-detail-section]").forEach((button) => {
 });
 $("#close-item-settings").onclick = $("#cancel-item-settings").onclick = () =>
   $("#item-settings-dialog").close();
-$("#item-settings-form").onsubmit = (event) => {
-  event.preventDefault();
+function applyLiveItemSettings() {
   const node = map().nodes.find((item) => item.id === selectedNodeId);
   if (!node) return;
-  const data = new FormData(event.currentTarget);
+  const data = new FormData($("#item-settings-form"));
   if (itemSettingsSection === "link") {
-    const link = data.get("link");
+    return;
+  }
+  if (!itemSettingsDirty) {
+    snapshot();
+    itemSettingsDirty = true;
+  }
+  if (itemSettingsSection === "content") {
+    const nextTitle = String(data.get("title") || "").trim();
+    if (nextTitle !== node.title) delete node.titleHtml;
+    node.title = nextTitle;
+    const nextSubtitle = String(data.get("subtitle") || "").trim();
+    if (nextSubtitle !== (node.subtitle || "")) delete node.subtitleHtml;
+    node.subtitle = nextSubtitle;
+    node.note = String(data.get("note") || "");
+  } else if (itemSettingsSection === "appearance") {
+    node.color = data.get("noColor") ? null : String(data.get("color"));
+    node.font = String(data.get("font"));
+    node.style = String(data.get("style"));
+  } else if (itemSettingsSection === "layout") {
+    node.align = String(data.get("align"));
+    node.layout = String(data.get("layout"));
+    node.size = String(data.get("size"));
+  }
+  renderNodes();
+  renderEdges();
+  renderNote();
+  scheduleSave();
+}
+$("#item-settings-form").oninput = applyLiveItemSettings;
+$("#item-settings-form").onchange = applyLiveItemSettings;
+$("#item-settings-form").onsubmit = (event) => {
+  event.preventDefault();
+  if (itemSettingsSection === "link") {
+    const link = new FormData(event.currentTarget).get("link");
     if (link !== null) {
       $("#node-link").value = String(link);
       $("#node-link").dispatchEvent(new Event("change"));
     }
-  } else {
-    snapshot();
-    if (itemSettingsSection === "content") {
-      const nextTitle = String(data.get("title") || "").trim();
-      if (nextTitle !== node.title) delete node.titleHtml;
-      node.title = nextTitle;
-      const nextSubtitle = String(data.get("subtitle") || "").trim();
-      if (nextSubtitle !== (node.subtitle || "")) delete node.subtitleHtml;
-      node.subtitle = nextSubtitle;
-      node.note = String(data.get("note") || "");
-    } else if (itemSettingsSection === "appearance") {
-      node.color = data.get("noColor") ? null : String(data.get("color"));
-      node.font = String(data.get("font"));
-      node.style = String(data.get("style"));
-    } else if (itemSettingsSection === "layout") {
-      node.align = String(data.get("align"));
-      node.layout = String(data.get("layout"));
-      node.size = String(data.get("size"));
-    }
-    renderNodes();
-    renderEdges();
-    renderNote();
-    scheduleSave();
-  }
+  } else applyLiveItemSettings();
   $("#item-settings-dialog").close();
 };
 $("#item-settings-dialog").addEventListener("pointerdown", (event) => {
