@@ -138,10 +138,44 @@ export function buildEdgePath(
   }
 
   const pathDistance = Math.max(1, Math.hypot(x2 - x1, y2 - y1));
-  const travel = Math.min(110, Math.max(24, pathDistance * 0.34));
-  const curve = Math.min(72, Math.max(0, pathDistance * 0.16));
   const normalX = -unitY;
   const normalY = unitX;
+  if (style === "wavy") {
+    const waves = Math.max(3, Math.min(7, Math.round(pathDistance / 90)));
+    const amplitude = Math.min(28, Math.max(12, pathDistance * 0.08));
+    let path = `M${x1},${y1}`;
+    let previous = { x: x1, y: y1, offset: 0 };
+    for (let index = 1; index <= waves; index += 1) {
+      const progress = index / waves;
+      const offset = index === waves ? 0 : (index % 2 ? 1 : -1) * amplitude;
+      const next = {
+        x: round(x1 + (x2 - x1) * progress + normalX * offset),
+        y: round(y1 + (y2 - y1) * progress + normalY * offset),
+        offset,
+      };
+      const step = pathDistance / waves / 3;
+      const control1X = round(previous.x + unitX * step);
+      const control1Y = round(previous.y + unitY * step);
+      const control2X = round(next.x - unitX * step);
+      const control2Y = round(next.y - unitY * step);
+      path += ` C${control1X},${control1Y} ${control2X},${control2Y} ${next.x},${next.y}`;
+      previous = next;
+    }
+    return path;
+  }
+  if (style === "loop") {
+    const middleX = (x1 + x2) / 2;
+    const middleY = (y1 + y2) / 2;
+    const radius = Math.min(90, Math.max(38, pathDistance * 0.28));
+    const handle = Math.min(52, pathDistance * 0.2);
+    const topX = round(middleX + normalX * radius);
+    const topY = round(middleY + normalY * radius);
+    const bottomX = round(middleX - normalX * radius);
+    const bottomY = round(middleY - normalY * radius);
+    return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${round(topX - unitX * radius)},${round(topY - unitY * radius)} ${topX},${topY} C${round(topX + unitX * radius)},${round(topY + unitY * radius)} ${round(bottomX + unitX * radius)},${round(bottomY + unitY * radius)} ${bottomX},${bottomY} C${round(bottomX - unitX * radius)},${round(bottomY - unitY * radius)} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+  }
+  const travel = Math.min(110, Math.max(24, pathDistance * 0.34));
+  const curve = Math.min(72, Math.max(0, pathDistance * 0.16));
   const middleX = round((x1 + x2) / 2 + normalX * curve);
   const middleY = round((y1 + y2) / 2 + normalY * curve);
   const middleHandle = Math.min(48, travel * 0.45);

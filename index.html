@@ -658,7 +658,9 @@
         <div id="edge-path-style" class="segmented">
           <button data-path="curved">Kavis</button
           ><button data-path="straight">Doğru</button
-          ><button data-path="elbow">Dirsek</button>
+          ><button data-path="elbow">Dirsek</button
+          ><button data-path="wavy">Dalga</button
+          ><button data-path="loop">Halka</button>
         </div>
       </fieldset>
       <label>Ok rengi<input id="edge-color" type="color" /></label>
@@ -757,8 +759,10 @@
       </button>
       <button
         type="button"
+        class="rich-mark-color"
         data-rich-command="backColor"
         data-rich-value="#fff0a8"
+        style="--mark-color: #fff0a8"
         aria-label="Vurgula"
       >
         <svg class="bi" viewBox="0 0 16 16" aria-hidden="true">
@@ -768,6 +772,30 @@
           />
         </svg>
       </button>
+      <button
+        type="button"
+        class="rich-mark-color"
+        data-rich-command="backColor"
+        data-rich-value="#cde7f5"
+        style="--mark-color: #cde7f5"
+        aria-label="Mavi vurgu"
+      ></button>
+      <button
+        type="button"
+        class="rich-mark-color"
+        data-rich-command="backColor"
+        data-rich-value="#d9edc5"
+        style="--mark-color: #d9edc5"
+        aria-label="Yeşil vurgu"
+      ></button>
+      <button
+        type="button"
+        class="rich-mark-color"
+        data-rich-command="backColor"
+        data-rich-value="#f8d7ec"
+        style="--mark-color: #f8d7ec"
+        aria-label="Pembe vurgu"
+      ></button>
       <span class="rich-divider"></span>
       <button
         type="button"

@@ -2935,3 +2935,17 @@ button > svg,
 .mind-node.style-none {
   padding: 0;
 }
+
+.rich-text-toolbar .rich-mark-color {
+  position: relative;
+  box-shadow: inset 0 -4px var(--mark-color);
+}
+.rich-text-toolbar .rich-mark-color::after {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 50%;
+  background: var(--mark-color);
+  content: "";
+}

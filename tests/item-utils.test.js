@@ -153,6 +153,21 @@ test("non-straight edges route around intervening items", () => {
   );
 });
 
+test("decorative edge paths keep directional endpoints", () => {
+  const source = { id: "source", type: "text", x: 0, y: 0 };
+  const target = { id: "target", type: "text", x: 360, y: 120 };
+  const wavy = buildEdgePath(source, target, "wavy");
+  const loop = buildEdgePath(source, target, "loop");
+  assert.ok((wavy.match(/ C/g) || []).length >= 3);
+  assert.equal((loop.match(/ C/g) || []).length, 3);
+  for (const path of [wavy, loop]) {
+    const values = path.match(/-?\d+(?:\.\d+)?/g).map(Number);
+    const tangentX = values.at(-2) - values.at(-4);
+    const tangentY = values.at(-1) - values.at(-3);
+    assert.ok(Math.abs(tangentX * 120 - tangentY * 360) < 2);
+  }
+});
+
 test("toolbar ink remains readable against light and dark canvases", () => {
   assert.equal(readableInk("#fbf8f0"), "#292722");
   assert.equal(readableInk("#17181b"), "#fffdf8");
