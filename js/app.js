@@ -642,7 +642,6 @@ function selectNode(id) {
   renderNodes();
   renderEdges();
   renderNote();
-  $("#note-panel").classList.add("open");
 }
 function selectNodeWithoutReplacingDraggedElement(id) {
   const detailsOpen = $("#note-panel").classList.contains("open");
@@ -804,7 +803,6 @@ function nodeEditableLink(node) {
 }
 function renderNote() {
   const n = map().nodes.find((n) => n.id === selectedNodeId);
-  $("#note-panel").classList.toggle("open", !!n);
   syncDetailsToggle();
   $(".note-empty").hidden = !!n;
   $(".note-content").hidden = !n;
@@ -963,10 +961,13 @@ canvas.addEventListener("pointerdown", (e) => {
       return;
     }
   }
-  selectedNodeId = selectedEdgeId = null;
+  const detailsOpen = $("#note-panel").classList.contains("open");
+  if (!detailsOpen) selectedNodeId = selectedEdgeId = null;
   $("#edge-popover").hidden = true;
-  $$(".mind-node").forEach((node) => node.classList.remove("selected"));
-  renderNote();
+  if (!detailsOpen) {
+    $$(".mind-node").forEach((node) => node.classList.remove("selected"));
+    renderNote();
+  }
   renderEdges();
   pan = {
     x: e.clientX,
@@ -1401,6 +1402,11 @@ $("#details-toggle").onclick = () => {
 $$("#item-context-menu [data-detail-section]").forEach((button) => {
   button.onclick = () => {
     if (!selectedNodeId) return;
+    if (!$("#note-panel").classList.contains("open")) {
+      $("#item-context-menu").hidden = true;
+      toast("Ayarlar için header'daki detay düğmesini aç.");
+      return;
+    }
     const targets = {
       content: "#note-title",
       appearance: ".color-row",
@@ -1731,12 +1737,7 @@ $$("#image-shape-options button").forEach(
       scheduleSave();
     }),
 );
-$("#close-note").onclick = () => {
-  $("#note-panel").classList.remove("open");
-  syncDetailsToggle();
-  selectedNodeId = null;
-  renderAll();
-};
+$("#close-note").onclick = () => $("#details-toggle").click();
 $("#delete-node").onclick = () => {
   if (!selectedNodeId) return;
   snapshot();
