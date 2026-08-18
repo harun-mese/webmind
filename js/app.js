@@ -1,5 +1,10 @@
 import { loadWorkspace, saveWorkspace } from "./database.js";
-import { formatBytes, nodeDimensions, youtubeId } from "./item-utils.js";
+import {
+  buildEdgePath,
+  formatBytes,
+  nodeDimensions,
+  youtubeId,
+} from "./item-utils.js";
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
 const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
@@ -138,7 +143,7 @@ function renderNodes() {
   map().nodes.forEach((n) => {
     const el = document.createElement("article");
     const type = n.type || "text";
-    el.className = `mind-node item-${type} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
+    el.className = `mind-node item-${type} style-${n.style || "soft"} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${n.color}`;
     el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>`;
@@ -262,28 +267,6 @@ function startConnection(e, n) {
   e.currentTarget.setPointerCapture(e.pointerId);
   renderEdges();
 }
-function pathFor(a, b, style = "curved") {
-  const { width: aw, height: ah } = nodeDimensions(a),
-    { width: bw, height: bh } = nodeDimensions(b);
-  let x1 = a.x + aw / 2,
-    y1 = a.y + ah / 2,
-    x2 = b.x + bw / 2,
-    y2 = b.y + bh / 2;
-  const dx = x2 - x1,
-    dy = y2 - y1;
-  if (Math.abs(dx) > Math.abs(dy)) {
-    x1 += (Math.sign(dx) * aw) / 2;
-    x2 -= (Math.sign(dx) * bw) / 2;
-  } else {
-    y1 += (Math.sign(dy) * ah) / 2;
-    y2 -= (Math.sign(dy) * bh) / 2;
-  }
-  if (style === "straight") return `M${x1},${y1} L${x2},${y2}`;
-  if (style === "elbow")
-    return `M${x1},${y1} L${(x1 + x2) / 2},${y1} L${(x1 + x2) / 2},${y2} L${x2},${y2}`;
-  const bend = Math.max(35, Math.abs(dx) * 0.45);
-  return `M${x1},${y1} C${x1 + Math.sign(dx || 1) * bend},${y1} ${x2 - Math.sign(dx || 1) * bend},${y2} ${x2},${y2}`;
-}
 function renderEdges() {
   edgeRoot.setAttribute("transform", currentTransform().replaceAll("px", ""));
   edgeRoot.innerHTML = "";
@@ -297,7 +280,7 @@ function renderEdges() {
       `edge-group ${edge.id === selectedEdgeId ? "selected" : ""}`,
     );
     g.dataset.id = edge.id;
-    const p = pathFor(a, b, edge.pathStyle);
+    const p = buildEdgePath(a, b, edge.pathStyle);
     const dash =
       edge.lineStyle === "dashed"
         ? "9 7"
@@ -398,6 +381,12 @@ function renderNote() {
         renderAll();
         scheduleSave();
       }),
+  );
+  $$("#node-style-options button").forEach((button) =>
+    button.classList.toggle(
+      "active",
+      button.dataset.nodeStyle === (n.style || "soft"),
+    ),
   );
 }
 function renderOverview() {
@@ -742,6 +731,18 @@ function updateNodeFromPanel() {
 $("#note-title").onchange = updateNodeFromPanel;
 $("#note-text").onchange = updateNodeFromPanel;
 $("#note-tags").onchange = updateNodeFromPanel;
+$$("#node-style-options button").forEach(
+  (button) =>
+    (button.onclick = () => {
+      const node = map().nodes.find((item) => item.id === selectedNodeId);
+      if (!node || node.style === button.dataset.nodeStyle) return;
+      snapshot();
+      node.style = button.dataset.nodeStyle;
+      renderNodes();
+      renderNote();
+      scheduleSave();
+    }),
+);
 $("#close-note").onclick = () => {
   $("#note-panel").classList.remove("open");
   selectedNodeId = null;

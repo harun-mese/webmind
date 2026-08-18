@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatBytes, nodeDimensions, youtubeId } from "../js/item-utils.js";
+import {
+  buildEdgePath,
+  formatBytes,
+  nodeDimensions,
+  youtubeId,
+} from "../js/item-utils.js";
 
 test("YouTube watch, short and embed URLs are normalized", () => {
   const id = "dQw4w9WgXcQ";
@@ -40,4 +45,28 @@ test("file sizes are human readable", () => {
   assert.equal(formatBytes(512), "512 B");
   assert.equal(formatBytes(2048), "2 KB");
   assert.equal(formatBytes(1572864), "1.5 MB");
+});
+
+test("vertical curves approach the target vertically", () => {
+  const down = buildEdgePath(
+    { type: "text", x: 0, y: 0 },
+    { type: "text", x: 0, y: 200 },
+  );
+  const up = buildEdgePath(
+    { type: "text", x: 0, y: 200 },
+    { type: "text", x: 0, y: 0 },
+  );
+  assert.equal(down, "M78,62 C78,131 78,131 78,200");
+  assert.equal(up, "M78,200 C78,131 78,131 78,62");
+});
+
+test("vertical elbow paths enter from the top or bottom edge", () => {
+  assert.equal(
+    buildEdgePath(
+      { type: "text", x: 0, y: 0 },
+      { type: "text", x: 100, y: 200 },
+      "elbow",
+    ),
+    "M78,62 L78,131 L178,131 L178,200",
+  );
 });
