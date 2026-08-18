@@ -4,6 +4,8 @@ import {
   buildEdgePath,
   formatBytes,
   nodeDimensions,
+  normalizeWebUrl,
+  parseMapLocation,
   readableInk,
   youtubeId,
 } from "../js/item-utils.js";
@@ -22,6 +24,23 @@ test("untrusted or malformed video URLs are rejected", () => {
   assert.equal(youtubeId("https://youtube.com/watch?v=bad"), null);
 });
 
+test("website URLs and map coordinates are normalized safely", () => {
+  assert.equal(
+    normalizeWebUrl("https://example.com/page"),
+    "https://example.com/page",
+  );
+  assert.equal(normalizeWebUrl("javascript:alert(1)"), null);
+  assert.deepEqual(parseMapLocation("41.0082, 28.9784"), {
+    lat: 41.0082,
+    lng: 28.9784,
+  });
+  assert.deepEqual(parseMapLocation("https://maps.example/@40.7,-74.0,12z"), {
+    lat: 40.7,
+    lng: -74,
+  });
+  assert.equal(parseMapLocation("999, 999"), null);
+});
+
 test("item sizes reflect their rich media layout", () => {
   assert.deepEqual(nodeDimensions({ type: "text" }), {
     width: 156,
@@ -38,6 +57,18 @@ test("item sizes reflect their rich media layout", () => {
   assert.deepEqual(nodeDimensions({ type: "file" }), {
     width: 230,
     height: 105,
+  });
+  assert.deepEqual(nodeDimensions({ type: "website" }), {
+    width: 260,
+    height: 125,
+  });
+  assert.deepEqual(nodeDimensions({ type: "map" }), {
+    width: 280,
+    height: 220,
+  });
+  assert.deepEqual(nodeDimensions({ type: "music" }), {
+    width: 270,
+    height: 125,
   });
   assert.deepEqual(nodeDimensions({ type: "text", width: 244, height: 74 }), {
     width: 244,

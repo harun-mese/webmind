@@ -6,6 +6,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 
 - Tuvalde çift tıklayarak fikir oluşturma
 - Üstteki **Yeni öğe** menüsüyle metin, görsel, YouTube videosu ve dosya kartları ekleme
+- Web sitesi kartları, OpenStreetMap konumları ve oynatılabilir müzik öğeleri
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli
 - Ayrı dairesel kontrollerden oluşan şeffaf ve minimal araç çubuğu
 - Düğüm başlığını çift tıklayarak düzenleme ve düğümleri sürükleme

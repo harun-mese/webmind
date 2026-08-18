@@ -3,6 +3,8 @@ import {
   buildEdgePath,
   formatBytes,
   nodeDimensions,
+  normalizeWebUrl,
+  parseMapLocation,
   readableInk,
   youtubeId,
 } from "./item-utils.js";
@@ -80,6 +82,9 @@ const defaults = {
     image: "glass",
     youtube: "outline",
     file: "note",
+    website: "outline",
+    map: "glass",
+    music: "soft",
   },
 };
 const initialMap = () => ({
@@ -274,6 +279,20 @@ function renderNodeMedia(node) {
     return `<div class="node-media"><img src="${escapeAttribute(node.mediaUrl)}" alt="" draggable="false"></div>`;
   if (node.type === "youtube" && node.mediaUrl)
     return `<div class="node-media"><iframe src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.mediaUrl)}" title="${escapeAttribute(node.title)}" loading="lazy" allowfullscreen></iframe></div>`;
+  if (node.type === "website" && node.mediaUrl) {
+    const safeUrl = normalizeWebUrl(node.mediaUrl);
+    if (!safeUrl) return "";
+    const host = new URL(safeUrl).hostname.replace(/^www\./, "");
+    return `<div class="node-media website-card"><span class="website-icon">◎</span><span><strong>${escapeHtml(host)}</strong><small>${escapeHtml(safeUrl)}</small></span></div>`;
+  }
+  if (node.type === "map" && node.mapLocation) {
+    const { lat, lng } = node.mapLocation;
+    const delta = 0.012;
+    const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta}%2C${lat - delta}%2C${lng + delta}%2C${lat + delta}&marker=${lat}%2C${lng}`;
+    return `<div class="node-media"><iframe class="map-frame" src="${escapeAttribute(src)}" title="${escapeAttribute(node.title)}" loading="lazy"></iframe></div>`;
+  }
+  if (node.type === "music" && node.mediaUrl)
+    return `<div class="node-media music-card"><span class="music-art">♫</span><audio src="${escapeAttribute(node.mediaUrl)}" controls preload="metadata"></audio></div>`;
   if (node.type === "file")
     return `<div class="node-media file-card"><span class="file-card-icon">${fileIcon(node.fileType)}</span><span class="file-card-meta"><span class="file-card-name">${escapeHtml(node.fileName || "Dosya")}</span><span class="file-card-size">${formatBytes(node.fileSize || 0)}</span></span></div>`;
   return "";
@@ -425,7 +444,8 @@ function onNodeDown(e) {
   if (
     e.target.classList.contains("connector") ||
     e.target.classList.contains("node-resize-handle") ||
-    e.target.isContentEditable
+    e.target.isContentEditable ||
+    e.target.closest("audio")
   )
     return;
   e.stopPropagation();
@@ -573,13 +593,19 @@ function renderNote() {
     );
   }
   const attachment = $("#open-attachment");
-  attachment.hidden = !n.mediaUrl || n.type === "image";
+  const attachmentUrl =
+    n.type === "map" && n.mapLocation
+      ? `https://www.openstreetmap.org/?mlat=${n.mapLocation.lat}&mlon=${n.mapLocation.lng}#map=15/${n.mapLocation.lat}/${n.mapLocation.lng}`
+      : n.mediaUrl;
+  attachment.hidden = !attachmentUrl || n.type === "image";
   if (!attachment.hidden) {
     attachment.href =
       n.type === "youtube"
         ? `https://www.youtube.com/watch?v=${n.mediaUrl}`
-        : n.mediaUrl;
-    attachment.download = n.type === "file" ? n.fileName || "dosya" : "";
+        : attachmentUrl;
+    attachment.download = ["file", "music"].includes(n.type)
+      ? n.fileName || "dosya"
+      : "";
   }
   $("#node-colors").innerHTML = COLORS.map((color) => {
     const value = color || "none";
@@ -798,11 +824,25 @@ function setItemType(type) {
   $$(".item-type").forEach((button) =>
     button.classList.toggle("active", button.dataset.type === type),
   );
-  $("#item-url-field").hidden = type !== "youtube";
-  $("#item-file-field").hidden = !["image", "file"].includes(type);
-  $("#item-file").accept = type === "image" ? "image/*" : "";
+  const needsUrl = ["youtube", "website", "map"].includes(type);
+  const needsFile = ["image", "file", "music"].includes(type);
+  $("#item-url-field").hidden = !needsUrl;
+  $("#item-file-field").hidden = !needsFile;
+  $("#item-url").type = type === "map" ? "text" : "url";
+  $("#item-url").placeholder =
+    type === "youtube"
+      ? "https://youtube.com/watch?v=…"
+      : type === "website"
+        ? "https://example.com"
+        : "41.0082, 28.9784 veya harita bağlantısı";
+  $("#item-file").accept =
+    type === "image" ? "image/*" : type === "music" ? "audio/*" : "";
   $("#item-file-label").textContent =
-    type === "image" ? "Bir görsel seç" : "Dosya seç veya buraya bırak";
+    type === "image"
+      ? "Bir görsel seç"
+      : type === "music"
+        ? "Bir müzik dosyası seç"
+        : "Dosya seç veya buraya bırak";
 }
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -827,6 +867,9 @@ async function createItemFromDialog() {
           image: "Yeni görsel",
           youtube: "YouTube videosu",
           file: file?.name || "Yeni dosya",
+          website: "Web sitesi",
+          map: "Harita konumu",
+          music: file?.name || "Müzik",
         }[type],
       x: position.x - (type === "text" ? 78 : 115),
       y: position.y - 31,
@@ -834,10 +877,11 @@ async function createItemFromDialog() {
       note: "",
       tags: [],
     };
-  if (["image", "file"].includes(type)) {
+  if (["image", "file", "music"].includes(type)) {
     if (!file) throw new Error("Lütfen bir dosya seç.");
-    if (file.size > 12 * 1024 * 1024)
-      throw new Error("Dosya en fazla 12 MB olabilir.");
+    const maxSize = type === "music" ? 24 : 12;
+    if (file.size > maxSize * 1024 * 1024)
+      throw new Error(`Dosya en fazla ${maxSize} MB olabilir.`);
     node.mediaUrl = await readFileAsDataUrl(file);
     node.fileName = file.name;
     node.fileType = file.type;
@@ -846,6 +890,16 @@ async function createItemFromDialog() {
   if (type === "youtube") {
     node.mediaUrl = youtubeId($("#item-url").value.trim());
     if (!node.mediaUrl) throw new Error("Geçerli bir YouTube bağlantısı gir.");
+  }
+  if (type === "website") {
+    node.mediaUrl = normalizeWebUrl($("#item-url").value.trim());
+    if (!node.mediaUrl)
+      throw new Error("Geçerli bir web sitesi bağlantısı gir.");
+  }
+  if (type === "map") {
+    node.mapLocation = parseMapLocation($("#item-url").value.trim());
+    if (!node.mapLocation)
+      throw new Error("Geçerli bir enlem ve boylam gir: 41.0082, 28.9784");
   }
   snapshot();
   map().nodes.push(node);

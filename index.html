@@ -468,6 +468,42 @@
           <option value="solid">Dolu</option>
         </select></label
       >
+      <label
+        >Web siteleri<select data-style-group="website">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">Şeffaf</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Haritalar<select data-style-group="map">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">Şeffaf</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Müzik<select data-style-group="music">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">Şeffaf</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
       <label class="settings-check"
         ><input id="apply-group-existing" type="checkbox" checked /> Değişikliği
         mevcut grup öğelerine de uygula</label
@@ -602,6 +638,15 @@
           <button type="button" class="item-type" data-type="file">
             <span>⌑</span><strong>Dosya</strong>
           </button>
+          <button type="button" class="item-type" data-type="website">
+            <span>◎</span><strong>Web sitesi</strong>
+          </button>
+          <button type="button" class="item-type" data-type="map">
+            <span>⌖</span><strong>Harita</strong>
+          </button>
+          <button type="button" class="item-type" data-type="music">
+            <span>♫</span><strong>Müzik</strong>
+          </button>
         </div>
         <input id="item-type" type="hidden" value="text" />
         <label class="dialog-field"
@@ -614,7 +659,7 @@
           >Bağlantı<input
             id="item-url"
             type="url"
-            placeholder="https://youtube.com/watch?v=…"
+            placeholder="Bağlantı veya koordinat"
         /></label>
         <label id="item-file-field" class="dialog-field file-drop" hidden>
           <span id="item-file-label">Dosya seç veya buraya bırak</span>

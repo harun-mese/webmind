@@ -1946,3 +1946,75 @@ body.sidebar-open .zoom-controls {
     transform: none;
   }
 }
+
+/* Website, map and music canvas items */
+.website-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 12px;
+}
+.website-icon,
+.music-art {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--node-color), white 48%);
+  font:
+    24px "Indie Flower",
+    cursive;
+}
+.website-card > span:last-child {
+  min-width: 0;
+}
+.website-card strong,
+.website-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.website-card strong {
+  font-family: ui-rounded, system-ui, sans-serif;
+  font-size: 13px;
+}
+.website-card small {
+  max-width: 150px;
+  margin-top: 3px;
+  color: color-mix(in srgb, var(--node-text), transparent 32%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 9px;
+}
+.node-media .map-frame {
+  height: 164px;
+}
+.music-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+.music-card audio {
+  min-width: 0;
+  width: 100%;
+  height: 36px;
+}
+.mind-node.item-website,
+.mind-node.item-music {
+  width: 270px;
+}
+.mind-node.item-map {
+  width: 280px;
+}
+.mind-node.item-map.size-small .map-frame {
+  height: 118px;
+}
+.mind-node.item-map.size-large .map-frame {
+  height: 210px;
+}
+.item-type-options {
+  grid-template-columns: repeat(4, 1fr);
+}

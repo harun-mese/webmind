@@ -15,7 +15,30 @@ export function nodeDimensions(node) {
   if (node.type === "image") return { width: 230, height: 230 };
   if (node.type === "youtube") return { width: 230, height: 180 };
   if (node.type === "file") return { width: 230, height: 105 };
+  if (node.type === "website") return { width: 260, height: 125 };
+  if (node.type === "map") return { width: 280, height: 220 };
+  if (node.type === "music") return { width: 270, height: 125 };
   return { width: 156, height: 62 };
+}
+
+export function normalizeWebUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export function parseMapLocation(value) {
+  const coordinateMatch = value.match(
+    /(-?\d{1,2}(?:\.\d+)?)\s*[,\s]\s*(-?\d{1,3}(?:\.\d+)?)/,
+  );
+  if (!coordinateMatch) return null;
+  const lat = Number(coordinateMatch[1]);
+  const lng = Number(coordinateMatch[2]);
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
 }
 
 export function buildEdgePath(source, target, style = "curved") {
