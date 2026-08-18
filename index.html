@@ -21,6 +21,17 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
+        <button
+          id="sidebar-toggle"
+          class="icon-button toolbar-icon"
+          title="Haritaları aç"
+          aria-label="Haritaları aç"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <a class="brand" href="#" aria-label="WebMind ana sayfa"
           ><span class="brand-mark">W</span><span>webmind</span></a
         >
@@ -43,7 +54,9 @@
             title="Geri al (Ctrl+Z)"
             aria-label="Geri al"
           >
-            ↶
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6" />
+            </svg>
           </button>
           <button
             id="redo-btn"
@@ -51,7 +64,9 @@
             title="İleri al (Ctrl+Shift+Z)"
             aria-label="İleri al"
           >
-            ↷
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6" />
+            </svg>
           </button>
           <button
             id="fit-btn"
@@ -59,13 +74,26 @@
             title="Haritayı ekrana sığdır"
             aria-label="Haritayı ekrana sığdır"
           >
-            ⌗
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5" />
+            </svg>
           </button>
           <button id="add-item-btn" class="button primary-button">
-            <span>＋</span> Yeni öğe
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Yeni öğe
           </button>
           <button id="appearance-btn" class="button">
-            <span>◐</span> Görünüm
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3a9 9 0 1 0 0 18c1.2 0 2-1.2 1.4-2.2-.7-1.2.2-2.8 1.6-2.8h2.5c2 0 3.5-1.8 2.8-3.7A9 9 0 0 0 12 3Z"
+              />
+              <circle cx="7.5" cy="11" r=".8" />
+              <circle cx="10" cy="7" r=".8" />
+              <circle cx="15" cy="8" r=".8" />
+            </svg>
+            Görünüm
           </button>
           <button
             id="export-btn"
@@ -73,13 +101,17 @@
             title="JSON olarak dışa aktar"
             aria-label="Dışa aktar"
           >
-            ⇩
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12m-4-4 4 4 4-4M5 19h14" />
+            </svg>
           </button>
           <label
             class="icon-button file-label"
             title="JSON dosyasından içe aktar"
             aria-label="İçe aktar"
-            >⇧<input
+            ><svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 16V4m-4 4 4-4 4 4M5 20h14" /></svg
+            ><input
               id="import-input"
               type="file"
               accept="application/json,.json"
@@ -172,9 +204,42 @@
 
         <aside id="note-panel" class="note-panel" aria-label="Düğüm notları">
           <div class="note-empty">
-            <div>✎</div>
-            <strong>Bir fikir seç</strong>
-            <p>Notlarını düzenlemek için haritadaki bir öğeye tıkla.</p>
+            <div class="overview-heading">
+              <span class="eyebrow">HARİTA ÖZETİ</span
+              ><strong id="overview-title">İlk Haritam</strong>
+            </div>
+            <div class="overview-stats">
+              <div>
+                <strong id="overview-node-count">0</strong><span>öğe</span>
+              </div>
+              <div>
+                <strong id="overview-edge-count">0</strong><span>bağlantı</span>
+              </div>
+            </div>
+            <label class="overview-search"
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-4-4" /></svg
+              ><input
+                id="item-search"
+                type="search"
+                placeholder="Fikirlerde ara…"
+            /></label>
+            <div id="overview-results" class="overview-results"></div>
+            <div class="overview-actions">
+              <span>Hızlı ekle</span>
+              <div>
+                <button data-quick-type="text" title="Metin ekle">T</button
+                ><button data-quick-type="image" title="Görsel ekle">▧</button
+                ><button data-quick-type="youtube" title="YouTube videosu ekle">
+                  ▶</button
+                ><button data-quick-type="file" title="Dosya ekle">⌑</button>
+              </div>
+            </div>
+            <p class="overview-tip">
+              Bir öğeyi seçerek notlarını, rengini ve ayrıntılarını
+              düzenleyebilirsin.
+            </p>
           </div>
           <div class="note-content" hidden>
             <div class="panel-heading">

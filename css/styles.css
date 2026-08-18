@@ -992,3 +992,239 @@ body {
 .attachment-button:hover {
   border-color: var(--ink);
 }
+
+/* Refined floating navigation */
+.topbar {
+  left: 16px;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+.topbar > * {
+  pointer-events: auto;
+}
+.topbar .brand,
+.topbar .map-title-wrap,
+.topbar .toolbar {
+  border: 1px solid rgba(207, 198, 181, 0.78);
+  background: rgba(255, 253, 250, 0.82);
+  box-shadow: 0 8px 28px rgba(59, 49, 35, 0.09);
+  backdrop-filter: blur(16px);
+}
+.topbar .brand {
+  height: 44px;
+  padding: 5px;
+  border-radius: 13px;
+}
+.topbar .map-title-wrap {
+  justify-self: center;
+  min-width: 230px;
+  padding: 4px 18px;
+  border-radius: 14px;
+}
+.topbar .toolbar {
+  padding: 4px;
+  border-radius: 14px;
+}
+#sidebar-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: rgba(255, 253, 250, 0.88);
+  box-shadow: 0 8px 28px rgba(59, 49, 35, 0.09);
+  backdrop-filter: blur(16px);
+}
+.icon-button svg,
+.button svg,
+.overview-search svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.sidebar {
+  top: 84px;
+  bottom: 16px;
+  transform: translateX(calc(-100% - 28px));
+  opacity: 0;
+  transition:
+    transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+}
+.sidebar.open {
+  transform: translateX(0);
+  opacity: 1;
+}
+.zoom-controls {
+  left: 16px;
+  transition: left 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+body.sidebar-open .zoom-controls {
+  left: 236px;
+}
+
+/* Functional map overview */
+.note-panel {
+  transform: none;
+}
+.note-empty {
+  display: block;
+  height: auto;
+  color: var(--ink);
+  text-align: left;
+}
+.overview-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+.overview-heading strong {
+  font:
+    25px "Indie Flower",
+    cursive;
+}
+.overview-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.overview-stats > div {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #faf6ee;
+}
+.overview-stats strong {
+  font-size: 22px;
+}
+.overview-stats span {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.overview-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+}
+.overview-search svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.overview-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: 0;
+  font-size: 12px;
+}
+.overview-results {
+  display: flex;
+  max-height: 210px;
+  flex-direction: column;
+  gap: 4px;
+  overflow: auto;
+  margin: 12px 0 18px;
+}
+.overview-result {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+}
+.overview-result:hover {
+  background: #f4eee3;
+}
+.overview-result-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--result-color);
+  box-shadow: 0 0 0 1px rgba(50, 45, 38, 0.13);
+}
+.overview-result span:last-child {
+  overflow: hidden;
+  font:
+    16px "Indie Flower",
+    cursive;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview-actions {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.overview-actions > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.overview-actions > div {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 9px;
+}
+.overview-actions button {
+  height: 37px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  font:
+    16px "Indie Flower",
+    cursive;
+}
+.overview-actions button:hover {
+  border-color: var(--ink);
+  background: #f7f1e7;
+}
+.note-empty .overview-tip {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+@media (max-width: 900px) {
+  .topbar .map-title-wrap {
+    display: none;
+  }
+  .topbar {
+    grid-template-columns: auto auto 1fr;
+  }
+  .topbar .toolbar {
+    justify-self: end;
+  }
+}

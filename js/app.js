@@ -109,6 +109,7 @@ function renderMaps() {
     b.onclick = () => {
       state.activeMapId = m.id;
       selectedNodeId = selectedEdgeId = null;
+      closeSidebar();
       renderAll();
       scheduleSave();
     };
@@ -369,7 +370,10 @@ function renderNote() {
   const n = map().nodes.find((n) => n.id === selectedNodeId);
   $(".note-empty").hidden = !!n;
   $(".note-content").hidden = !n;
-  if (!n) return;
+  if (!n) {
+    renderOverview();
+    return;
+  }
   $("#note-title").value = n.title;
   $("#note-text").value = n.note || "";
   $("#note-tags").value = (n.tags || []).join(", ");
@@ -395,6 +399,36 @@ function renderNote() {
         scheduleSave();
       }),
   );
+}
+function renderOverview() {
+  $("#overview-title").textContent = map().title;
+  $("#overview-node-count").textContent = map().nodes.length;
+  $("#overview-edge-count").textContent = map().edges.length;
+  const query = $("#item-search").value.trim().toLocaleLowerCase("tr"),
+    matches = map()
+      .nodes.filter((node) =>
+        [node.title, node.note, ...(node.tags || [])]
+          .join(" ")
+          .toLocaleLowerCase("tr")
+          .includes(query),
+      )
+      .slice(0, 8),
+    results = $("#overview-results");
+  results.innerHTML = "";
+  matches.forEach((node) => {
+    const button = document.createElement("button");
+    button.className = "overview-result";
+    button.innerHTML = `<span class="overview-result-dot" style="--result-color:${escapeAttribute(node.color)}"></span><span></span>`;
+    button.lastElementChild.textContent = node.title;
+    button.onclick = () => selectNode(node.id);
+    results.append(button);
+  });
+  if (!matches.length) {
+    const empty = document.createElement("p");
+    empty.className = "overview-no-result";
+    empty.textContent = query ? "Eşleşen bir fikir yok." : "Henüz bir öğe yok.";
+    results.append(empty);
+  }
 }
 function mutateAppearance(key, value) {
   snapshot();
@@ -603,6 +637,14 @@ async function createItemFromDialog() {
   scheduleSave();
 }
 $("#add-item-btn").onclick = () => openItemDialog();
+$$("[data-quick-type]").forEach(
+  (button) =>
+    (button.onclick = () => {
+      openItemDialog();
+      setItemType(button.dataset.quickType);
+    }),
+);
+$("#item-search").oninput = () => renderOverview();
 $$(".item-type").forEach(
   (button) => (button.onclick = () => setItemType(button.dataset.type)),
 );
@@ -618,6 +660,27 @@ $("#item-form").onsubmit = async (event) => {
 };
 $("#appearance-btn").onclick = () => {
   $("#appearance-popover").hidden = !$("#appearance-popover").hidden;
+};
+function closeSidebar() {
+  $(".sidebar").classList.remove("open");
+  document.body.classList.remove("sidebar-open");
+  $("#sidebar-toggle").setAttribute("aria-expanded", "false");
+  $("#sidebar-toggle").setAttribute("title", "Haritaları aç");
+  $("#sidebar-toggle").setAttribute("aria-label", "Haritaları aç");
+}
+$("#sidebar-toggle").onclick = () => {
+  const willOpen = !$(".sidebar").classList.contains("open");
+  $(".sidebar").classList.toggle("open", willOpen);
+  document.body.classList.toggle("sidebar-open", willOpen);
+  $("#sidebar-toggle").setAttribute("aria-expanded", String(willOpen));
+  $("#sidebar-toggle").setAttribute(
+    "title",
+    willOpen ? "Haritaları kapat" : "Haritaları aç",
+  );
+  $("#sidebar-toggle").setAttribute(
+    "aria-label",
+    willOpen ? "Haritaları kapat" : "Haritaları aç",
+  );
 };
 $$(".popover-close").forEach(
   (b) => (b.onclick = () => (b.closest(".popover").hidden = true)),
