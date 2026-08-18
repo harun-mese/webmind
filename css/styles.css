@@ -2931,3 +2931,7 @@ button > svg,
 .preview-solid b {
   background: white;
 }
+
+.mind-node.style-none {
+  padding: 0;
+}

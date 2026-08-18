@@ -33,6 +33,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
 - Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
+- Doğru bağlantılar serbest geçerken kavisli ve dirsekli bağlantılarda item engellerini üstten veya alttan dolaşan rota
 - Noktalı, kareli, çizgili veya boş canvas deseni ve özelleştirilebilir renkler
 - Her öğe için yumuşak kart, yapışkan not, çizgisel veya cam görünüm stili
 - Metin, görsel, YouTube ve dosya grupları için ayrı toplu stil varsayılanları

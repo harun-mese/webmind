@@ -42,7 +42,12 @@ export function parseMapLocation(value) {
   return { lat, lng };
 }
 
-export function buildEdgePath(source, target, style = "curved") {
+export function buildEdgePath(
+  source,
+  target,
+  style = "curved",
+  obstacles = [],
+) {
   const sourceSize = nodeDimensions(source);
   const targetSize = nodeDimensions(target);
   const sourceCenter = {
@@ -74,6 +79,58 @@ export function buildEdgePath(source, target, style = "curved") {
   const y2 = round(targetCenter.y - unitY * targetDistance);
 
   if (style === "straight") return `M${x1},${y1} L${x2},${y2}`;
+  const blockers = obstacles.filter((node) => {
+    if (node.id === source.id || node.id === target.id) return false;
+    const size = nodeDimensions(node);
+    const padding = 8;
+    return (
+      node.x - padding <= Math.max(x1, x2) &&
+      node.x + size.width + padding >= Math.min(x1, x2) &&
+      node.y - padding <= Math.max(y1, y2) &&
+      node.y + size.height + padding >= Math.min(y1, y2)
+    );
+  });
+  if (blockers.length) {
+    const clearance = 26;
+    const bounds = blockers.map((node) => {
+      const size = nodeDimensions(node);
+      return {
+        left: node.x,
+        right: node.x + size.width,
+        top: node.y,
+        bottom: node.y + size.height,
+      };
+    });
+    let corridor;
+    if (horizontal) {
+      const above =
+        Math.min(y1, y2, ...bounds.map((item) => item.top)) - clearance;
+      const below =
+        Math.max(y1, y2, ...bounds.map((item) => item.bottom)) + clearance;
+      corridor =
+        Math.abs(y1 - above) + Math.abs(y2 - above) <=
+        Math.abs(y1 - below) + Math.abs(y2 - below)
+          ? above
+          : below;
+      if (style === "elbow")
+        return `M${x1},${y1} L${x1},${corridor} L${x2},${corridor} L${x2},${y2}`;
+      const handle = Math.min(32, distance * 0.16);
+      return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${x1},${corridor} ${x1},${corridor} L${x2},${corridor} C${x2},${corridor} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+    }
+    const left =
+      Math.min(x1, x2, ...bounds.map((item) => item.left)) - clearance;
+    const right =
+      Math.max(x1, x2, ...bounds.map((item) => item.right)) + clearance;
+    corridor =
+      Math.abs(x1 - left) + Math.abs(x2 - left) <=
+      Math.abs(x1 - right) + Math.abs(x2 - right)
+        ? left
+        : right;
+    if (style === "elbow")
+      return `M${x1},${y1} L${corridor},${y1} L${corridor},${y2} L${x2},${y2}`;
+    const handle = Math.min(32, distance * 0.16);
+    return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${corridor},${y1} ${corridor},${y1} L${corridor},${y2} C${corridor},${y2} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+  }
   if (style === "elbow") {
     return horizontal
       ? `M${x1},${y1} L${(x1 + x2) / 2},${y1} L${(x1 + x2) / 2},${y2} L${x2},${y2}`

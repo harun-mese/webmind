@@ -135,6 +135,24 @@ test("vertical elbow paths enter from the top or bottom edge", () => {
   );
 });
 
+test("non-straight edges route around intervening items", () => {
+  const source = { id: "source", type: "text", x: 0, y: 0 };
+  const target = { id: "target", type: "text", x: 400, y: 0 };
+  const blocker = { id: "blocker", type: "text", x: 200, y: 0 };
+  assert.equal(
+    buildEdgePath(source, target, "elbow", [source, target, blocker]),
+    "M168,31 L168,-26 L388,-26 L388,31",
+  );
+  assert.equal(
+    buildEdgePath(source, target, "straight", [source, target, blocker]),
+    "M168,31 L388,31",
+  );
+  assert.match(
+    buildEdgePath(source, target, "curved", [source, target, blocker]),
+    /L388,-26/,
+  );
+});
+
 test("toolbar ink remains readable against light and dark canvases", () => {
   assert.equal(readableInk("#fbf8f0"), "#292722");
   assert.equal(readableInk("#17181b"), "#fffdf8");
