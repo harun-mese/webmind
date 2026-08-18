@@ -6,7 +6,8 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 
 - Tuvalde çift tıklayarak fikir oluşturma
 - Üstteki **Yeni öğe** menüsüyle metin, görsel, YouTube videosu ve dosya kartları ekleme
-- Web sitesi kartları, OpenStreetMap konumları ve oynatılabilir müzik öğeleri
+- Faviconlu web sitesi kartları, Google Maps konumları ve oynatılabilir müzik öğeleri
+- Dosya veya bağlantıdan görsel; dosya, doğrudan ses URL'si veya YouTube'dan müzik ekleme
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli
 - Ayrı dairesel kontrollerden oluşan şeffaf ve minimal araç çubuğu

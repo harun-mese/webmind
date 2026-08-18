@@ -116,7 +116,9 @@ export function youtubeId(value) {
     const hostname = url.hostname.replace(/^www\./, "");
     let id = null;
     if (hostname === "youtu.be") id = url.pathname.slice(1).split("/")[0];
-    if (["youtube.com", "m.youtube.com"].includes(hostname)) {
+    if (
+      ["youtube.com", "m.youtube.com", "music.youtube.com"].includes(hostname)
+    ) {
       if (
         url.pathname.startsWith("/shorts/") ||
         url.pathname.startsWith("/embed/")

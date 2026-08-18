@@ -2100,3 +2100,75 @@ body.sidebar-open .zoom-controls {
     opacity: 0.7;
   }
 }
+
+/* Linked media and minimal custom audio controls */
+.website-icon img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+.website-icon img + b {
+  display: none;
+}
+.website-icon b {
+  font: inherit;
+}
+.music-card {
+  align-items: center;
+}
+.audio-player {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.audio-player audio {
+  display: none;
+}
+.audio-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0 0 0 2px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--node-text);
+  color: var(--node-color);
+  font-size: 11px;
+}
+.audio-track {
+  min-width: 0;
+}
+.audio-progress {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin: 0;
+  accent-color: var(--node-text);
+  cursor: pointer;
+}
+.audio-time {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: color-mix(in srgb, var(--node-text), transparent 25%);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.node-media .music-youtube {
+  height: 150px;
+}
+.mind-node.item-music.size-small .music-youtube {
+  height: 96px;
+}
+.mind-node.item-music.size-large .music-youtube {
+  height: 190px;
+}
+.audio-current,
+.audio-duration {
+  white-space: nowrap;
+}

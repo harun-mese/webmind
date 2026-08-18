@@ -276,6 +276,7 @@ function renderNodes() {
       (e) => startResize(e, n, el),
     );
     nodeLayer.append(el);
+    bindMediaControls(el);
     n.renderWidth = el.offsetWidth;
     n.renderHeight = el.offsetHeight;
   });
@@ -290,21 +291,58 @@ function renderNodeMedia(node) {
     const safeUrl = normalizeWebUrl(node.mediaUrl);
     if (!safeUrl) return "";
     const host = new URL(safeUrl).hostname.replace(/^www\./, "");
-    return `<div class="node-media website-card"><span class="website-icon">◎</span><span><strong>${escapeHtml(host)}</strong><small>${escapeHtml(safeUrl)}</small></span></div>`;
+    const favicon = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(safeUrl)}`;
+    return `<div class="node-media website-card"><span class="website-icon"><img src="${escapeAttribute(favicon)}" alt="" loading="lazy"><b>◎</b></span><span><strong>${escapeHtml(host)}</strong><small>${escapeHtml(safeUrl)}</small></span></div>`;
   }
   if (node.type === "map" && node.mapLocation) {
     const { lat, lng } = node.mapLocation;
-    const delta = 0.012;
-    const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - delta}%2C${lat - delta}%2C${lng + delta}%2C${lat + delta}&marker=${lat}%2C${lng}`;
+    const src = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
     return `<div class="node-media"><iframe class="map-frame" src="${escapeAttribute(src)}" title="${escapeAttribute(node.title)}" loading="lazy"></iframe></div>`;
   }
-  if (node.type === "music" && node.mediaUrl)
-    return `<div class="node-media music-card"><span class="music-art">♫</span><audio src="${escapeAttribute(node.mediaUrl)}" controls preload="metadata"></audio></div>`;
-  if (node.type === "recording" && node.mediaUrl)
-    return `<div class="node-media music-card recording-card"><span class="music-art">●</span><audio src="${escapeAttribute(node.mediaUrl)}" controls preload="metadata"></audio></div>`;
+  if (node.type === "music" && node.youtubeId)
+    return `<div class="node-media"><iframe class="music-youtube" src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.youtubeId)}" title="${escapeAttribute(node.title)}" loading="lazy" allow="autoplay; encrypted-media"></iframe></div>`;
+  if (["music", "recording"].includes(node.type) && node.mediaUrl)
+    return renderAudioPlayer(node, node.type === "recording" ? "●" : "♫");
   if (node.type === "file")
     return `<div class="node-media file-card"><span class="file-card-icon">${fileIcon(node.fileType)}</span><span class="file-card-meta"><span class="file-card-name">${escapeHtml(node.fileName || "Dosya")}</span><span class="file-card-size">${formatBytes(node.fileSize || 0)}</span></span></div>`;
   return "";
+}
+function renderAudioPlayer(node, icon) {
+  return `<div class="node-media music-card ${node.type === "recording" ? "recording-card" : ""}"><span class="music-art">${icon}</span><div class="audio-player"><button type="button" class="audio-toggle" aria-label="Oynat">▶</button><div class="audio-track"><input class="audio-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Oynatma konumu"><div class="audio-time"><time class="audio-current">0:00</time><time class="audio-duration">0:00</time></div></div><audio src="${escapeAttribute(node.mediaUrl)}" preload="metadata"></audio></div></div>`;
+}
+function mediaTime(seconds) {
+  if (!Number.isFinite(seconds)) return "0:00";
+  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+}
+function bindMediaControls(element) {
+  const audio = element.querySelector(".audio-player audio");
+  if (audio) {
+    const toggle = element.querySelector(".audio-toggle");
+    const progress = element.querySelector(".audio-progress");
+    const current = element.querySelector(".audio-current");
+    const duration = element.querySelector(".audio-duration");
+    const sync = () => {
+      current.textContent = mediaTime(audio.currentTime);
+      duration.textContent = mediaTime(audio.duration);
+      progress.value = audio.duration
+        ? (audio.currentTime / audio.duration) * 100
+        : 0;
+      toggle.textContent = audio.paused ? "▶" : "Ⅱ";
+      toggle.setAttribute("aria-label", audio.paused ? "Oynat" : "Duraklat");
+    };
+    toggle.onclick = () => (audio.paused ? audio.play() : audio.pause());
+    progress.oninput = () => {
+      if (audio.duration)
+        audio.currentTime = (Number(progress.value) / 100) * audio.duration;
+    };
+    audio.addEventListener("loadedmetadata", sync);
+    audio.addEventListener("timeupdate", sync);
+    audio.addEventListener("play", sync);
+    audio.addEventListener("pause", sync);
+    audio.addEventListener("ended", sync);
+  }
+  const favicon = element.querySelector(".website-icon img");
+  if (favicon) favicon.onerror = () => favicon.remove();
 }
 function fileIcon(type = "") {
   if (type.includes("pdf")) return "PDF";
@@ -454,7 +492,7 @@ function onNodeDown(e) {
     e.target.classList.contains("connector") ||
     e.target.classList.contains("node-resize-handle") ||
     e.target.isContentEditable ||
-    e.target.closest("audio")
+    e.target.closest("audio, .audio-player")
   )
     return;
   e.stopPropagation();
@@ -604,8 +642,10 @@ function renderNote() {
   const attachment = $("#open-attachment");
   const attachmentUrl =
     n.type === "map" && n.mapLocation
-      ? `https://www.openstreetmap.org/?mlat=${n.mapLocation.lat}&mlon=${n.mapLocation.lng}#map=15/${n.mapLocation.lat}/${n.mapLocation.lng}`
-      : n.mediaUrl;
+      ? `https://www.google.com/maps?q=${n.mapLocation.lat},${n.mapLocation.lng}`
+      : n.type === "music" && n.youtubeId
+        ? `https://www.youtube.com/watch?v=${n.youtubeId}`
+        : n.mediaUrl;
   attachment.hidden = !attachmentUrl || n.type === "image";
   if (!attachment.hidden) {
     attachment.href =
@@ -834,7 +874,9 @@ function setItemType(type) {
   $$(".item-type").forEach((button) =>
     button.classList.toggle("active", button.dataset.type === type),
   );
-  const needsUrl = ["youtube", "website", "map"].includes(type);
+  const needsUrl = ["youtube", "website", "map", "image", "music"].includes(
+    type,
+  );
   const needsFile = ["image", "file", "music"].includes(type);
   $("#item-url-field").hidden = !needsUrl;
   $("#item-file-field").hidden = !needsFile;
@@ -845,7 +887,14 @@ function setItemType(type) {
       ? "https://youtube.com/watch?v=…"
       : type === "website"
         ? "https://example.com"
-        : "41.0082, 28.9784 veya harita bağlantısı";
+        : type === "image"
+          ? "https://example.com/gorsel.jpg"
+          : type === "music"
+            ? "YouTube veya doğrudan ses bağlantısı"
+            : "41.0082, 28.9784 veya Google Maps bağlantısı";
+  $("#item-url-label").textContent = ["image", "music"].includes(type)
+    ? "Bağlantı (dosya yerine kullanılabilir)"
+    : "Bağlantı";
   $("#item-file").accept =
     type === "image" ? "image/*" : type === "music" ? "audio/*" : "";
   $("#item-file-label").textContent =
@@ -966,8 +1015,8 @@ async function createItemFromDialog() {
       note: "",
       tags: [],
     };
-  if (["image", "file", "music"].includes(type)) {
-    if (!file) throw new Error("Lütfen bir dosya seç.");
+  if (type === "file" && !file) throw new Error("Lütfen bir dosya seç.");
+  if (file && ["image", "file", "music"].includes(type)) {
     const maxSize = type === "music" ? 24 : 12;
     if (file.size > maxSize * 1024 * 1024)
       throw new Error(`Dosya en fazla ${maxSize} MB olabilir.`);
@@ -975,6 +1024,18 @@ async function createItemFromDialog() {
     node.fileName = file.name;
     node.fileType = file.type;
     node.fileSize = file.size;
+  }
+  if (type === "image" && !file) {
+    node.mediaUrl = normalizeWebUrl($("#item-url").value.trim());
+    if (!node.mediaUrl)
+      throw new Error("Bir görsel dosyası veya bağlantısı ekle.");
+  }
+  if (type === "music" && !file) {
+    const value = $("#item-url").value.trim();
+    node.youtubeId = youtubeId(value);
+    if (!node.youtubeId) node.mediaUrl = normalizeWebUrl(value);
+    if (!node.youtubeId && !node.mediaUrl)
+      throw new Error("Bir müzik dosyası, YouTube veya ses bağlantısı ekle.");
   }
   if (type === "youtube") {
     node.mediaUrl = youtubeId($("#item-url").value.trim());

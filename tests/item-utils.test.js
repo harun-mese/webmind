@@ -16,6 +16,7 @@ test("YouTube watch, short and embed URLs are normalized", () => {
   assert.equal(youtubeId(`https://youtu.be/${id}`), id);
   assert.equal(youtubeId(`https://youtube.com/shorts/${id}`), id);
   assert.equal(youtubeId(`https://youtube.com/embed/${id}`), id);
+  assert.equal(youtubeId(`https://music.youtube.com/watch?v=${id}`), id);
 });
 
 test("untrusted or malformed video URLs are rejected", () => {
