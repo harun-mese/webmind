@@ -32,21 +32,6 @@
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <a class="brand" href="#" aria-label="WebMind ana sayfa"
-          ><span class="brand-mark">W</span><span>webmind</span></a
-        >
-        <div class="map-title-wrap">
-          <input
-            id="map-title"
-            class="map-title"
-            value="İlk Haritam"
-            aria-label="Harita adı"
-            maxlength="80"
-          />
-          <span id="save-state" class="save-state" aria-live="polite"
-            ><span class="status-dot"></span> Kaydedildi</span
-          >
-        </div>
         <nav class="toolbar" aria-label="Harita araçları">
           <button
             id="undo-btn"
@@ -78,13 +63,22 @@
               <path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5" />
             </svg>
           </button>
-          <button id="add-item-btn" class="button primary-button">
+          <button
+            id="add-item-btn"
+            class="icon-button primary-button"
+            title="Yeni öğe"
+            aria-label="Yeni öğe"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 5v14M5 12h14" />
             </svg>
-            Yeni öğe
           </button>
-          <button id="appearance-btn" class="button">
+          <button
+            id="appearance-btn"
+            class="icon-button"
+            title="Görünüm"
+            aria-label="Görünüm"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M12 3a9 9 0 1 0 0 18c1.2 0 2-1.2 1.4-2.2-.7-1.2.2-2.8 1.6-2.8h2.5c2 0 3.5-1.8 2.8-3.7A9 9 0 0 0 12 3Z"
@@ -93,7 +87,6 @@
               <circle cx="10" cy="7" r=".8" />
               <circle cx="15" cy="8" r=".8" />
             </svg>
-            Görünüm
           </button>
           <button
             id="export-btn"
@@ -121,6 +114,28 @@
 
       <main class="workspace">
         <aside class="sidebar" aria-label="Haritalar">
+          <button
+            id="sidebar-close"
+            class="icon-button sidebar-close"
+            title="Haritaları kapat"
+            aria-label="Haritaları kapat"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+          <div class="sidebar-map-meta">
+            <input
+              id="map-title"
+              class="map-title"
+              value="İlk Haritam"
+              aria-label="Harita adı"
+              maxlength="80"
+            />
+            <span id="save-state" class="save-state" aria-live="polite"
+              ><span class="status-dot"></span> Kaydedildi</span
+            >
+          </div>
           <div class="sidebar-heading">
             <span>Haritalarım</span
             ><button
@@ -204,42 +219,7 @@
 
         <aside id="note-panel" class="note-panel" aria-label="Düğüm notları">
           <div class="note-empty">
-            <div class="overview-heading">
-              <span class="eyebrow">HARİTA ÖZETİ</span
-              ><strong id="overview-title">İlk Haritam</strong>
-            </div>
-            <div class="overview-stats">
-              <div>
-                <strong id="overview-node-count">0</strong><span>öğe</span>
-              </div>
-              <div>
-                <strong id="overview-edge-count">0</strong><span>bağlantı</span>
-              </div>
-            </div>
-            <label class="overview-search"
-              ><svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-4-4" /></svg
-              ><input
-                id="item-search"
-                type="search"
-                placeholder="Fikirlerde ara…"
-            /></label>
-            <div id="overview-results" class="overview-results"></div>
-            <div class="overview-actions">
-              <span>Hızlı ekle</span>
-              <div>
-                <button data-quick-type="text" title="Metin ekle">T</button
-                ><button data-quick-type="image" title="Görsel ekle">▧</button
-                ><button data-quick-type="youtube" title="YouTube videosu ekle">
-                  ▶</button
-                ><button data-quick-type="file" title="Dosya ekle">⌑</button>
-              </div>
-            </div>
-            <p class="overview-tip">
-              Bir öğeyi seçerek notlarını, rengini ve ayrıntılarını
-              düzenleyebilirsin.
-            </p>
+            <span></span>
           </div>
           <div class="note-content" hidden>
             <div class="panel-heading">

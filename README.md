@@ -7,7 +7,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Tuvalde çift tıklayarak fikir oluşturma
 - Üstteki **Yeni öğe** menüsüyle metin, görsel, YouTube videosu ve dosya kartları ekleme
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli
-- Arama, öğe/bağlantı sayıları ve hızlı ekleme araçları sunan işlevsel harita özeti
+- Ayrı dairesel kontrollerden oluşan şeffaf ve minimal araç çubuğu
 - Düğüm başlığını çift tıklayarak düzenleme ve düğümleri sürükleme
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
