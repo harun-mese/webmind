@@ -287,7 +287,7 @@ function renderNodes() {
     if (isNew) {
       el = document.createElement("article");
       el.dataset.id = n.id;
-      el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><div class="node-subtitle"></div><button class="connector"></button><button class="node-more" type="button" aria-label="Öğe detaylarını aç">•••</button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
+      el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><div class="node-subtitle"></div><button class="connector"></button><button class="node-more" type="button" aria-label="Öğe detaylarını aç"><svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/></svg></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
       el.addEventListener("pointerdown", onNodeDown);
       el.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -302,8 +302,8 @@ function renderNodes() {
         const node = map().nodes.find((item) => item.id === el.dataset.id);
         if (!node) return;
         const subtitle = event.target.closest(".node-subtitle");
-        if (subtitle) editSubtitle(subtitle, node);
-        else editTitle(el.querySelector(".node-title"), node);
+        if (subtitle) editSubtitle(subtitle, node, event);
+        else editTitle(el.querySelector(".node-title"), node, event);
       });
       el.querySelector(".connector").addEventListener(
         "pointerdown",
@@ -347,7 +347,11 @@ function renderNodes() {
       if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
       else title.textContent = n.title;
     }
-    el.querySelector(".node-subtitle").textContent = n.subtitle || "";
+    const subtitle = el.querySelector(".node-subtitle");
+    if (!subtitle.isContentEditable) {
+      if (n.subtitleHtml) subtitle.innerHTML = sanitizeRichText(n.subtitleHtml);
+      else subtitle.textContent = n.subtitle || "";
+    }
     el.querySelector(".connector").ariaLabel =
       `${n.title || "Başlıksız öğe"} öğesinden bağlantı oluştur`;
     if (isNew || el.dataset.boundMediaSignature !== signature) {
@@ -488,7 +492,16 @@ function escapeHtml(s) {
 function sanitizeRichText(html) {
   const template = document.createElement("template");
   template.innerHTML = html;
-  const allowed = new Set(["B", "STRONG", "U", "BR", "FONT"]);
+  const allowed = new Set([
+    "B",
+    "STRONG",
+    "I",
+    "EM",
+    "U",
+    "BR",
+    "FONT",
+    "SPAN",
+  ]);
   const clean = (parent) => {
     [...parent.childNodes].forEach((node) => {
       if (node.nodeType !== Node.ELEMENT_NODE) return;
@@ -498,7 +511,14 @@ function sanitizeRichText(html) {
         return;
       }
       [...node.attributes].forEach((attribute) => {
-        if (!(node.tagName === "FONT" && attribute.name === "color")) {
+        const fontColor = node.tagName === "FONT" && attribute.name === "color";
+        const markStyle =
+          node.tagName === "SPAN" &&
+          attribute.name === "style" &&
+          /^background-color:\s*(#[\da-f]{3,8}|rgb\([\d\s,.%]+\));?$/i.test(
+            attribute.value,
+          );
+        if (!fontColor && !markStyle) {
           node.removeAttribute(attribute.name);
         }
       });
@@ -523,15 +543,53 @@ function escapeAttribute(value = "") {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
-function editTitle(el, n) {
+function selectEditorContent(element, event) {
+  const selection = getSelection();
+  selection.removeAllRanges();
+  let range = null;
+  if (event && document.caretPositionFromPoint) {
+    const position = document.caretPositionFromPoint(
+      event.clientX,
+      event.clientY,
+    );
+    if (position && element.contains(position.offsetNode)) {
+      range = document.createRange();
+      if (
+        event.detail >= 2 &&
+        position.offsetNode.nodeType === Node.TEXT_NODE
+      ) {
+        const text = position.offsetNode.textContent;
+        let start = position.offset;
+        let end = position.offset;
+        while (start > 0 && !/\s/.test(text[start - 1])) start -= 1;
+        while (end < text.length && !/\s/.test(text[end])) end += 1;
+        range.setStart(position.offsetNode, start);
+        range.setEnd(position.offsetNode, end);
+      } else {
+        range.setStart(position.offsetNode, position.offset);
+        range.collapse(true);
+      }
+    }
+  } else if (event && document.caretRangeFromPoint) {
+    const candidate = document.caretRangeFromPoint(
+      event.clientX,
+      event.clientY,
+    );
+    if (candidate && element.contains(candidate.startContainer))
+      range = candidate;
+  }
+  if (!range) {
+    range = document.createRange();
+    range.selectNodeContents(element);
+    if (event) range.collapse(false);
+  }
+  selection.addRange(range);
+}
+function editTitle(el, n, event = null) {
   el.contentEditable = "true";
   activeTitleEditor = el;
   el.focus();
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  const sel = getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
+  selectEditorContent(el, event);
   const original = n.title;
   const originalHtml = n.titleHtml || escapeHtml(n.title);
   const finish = (cancel) => {
@@ -564,29 +622,32 @@ function editTitle(el, n) {
   };
   el.onblur = () => finish(false);
 }
-function editSubtitle(element, node) {
+function editSubtitle(element, node, event = null) {
   const original = node.subtitle || "";
+  const originalHtml = node.subtitleHtml || escapeHtml(original);
   let finished = false;
   element.contentEditable = "true";
   element.focus();
-  const range = document.createRange();
-  range.selectNodeContents(element);
-  const selection = getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
+  activeTitleEditor = element;
+  selectEditorContent(element, event);
   const finish = (cancel = false) => {
     if (finished) return;
     finished = true;
+    $("#rich-text-toolbar").hidden = true;
+    activeTitleEditor = null;
+    savedTitleRange = null;
     element.contentEditable = "false";
     const next = cancel ? original : element.textContent.trim();
-    if (!cancel && next !== original) {
+    const formatted = sanitizeRichText(element.innerHTML);
+    if (!cancel && (next !== original || formatted !== originalHtml)) {
       snapshot();
       node.subtitle = next;
+      node.subtitleHtml = next ? formatted : "";
       scheduleSave();
       renderNodes();
       renderEdges();
       renderNote();
-    } else element.textContent = original;
+    } else element.innerHTML = originalHtml;
   };
   element.onkeydown = (event) => {
     if (event.key === "Enter") {
@@ -632,7 +693,10 @@ $$("#rich-text-toolbar button").forEach((button) => {
   button.addEventListener("pointerdown", (event) => {
     event.preventDefault();
     if (button.dataset.richCommand)
-      applyRichCommand(button.dataset.richCommand);
+      applyRichCommand(
+        button.dataset.richCommand,
+        button.dataset.richValue || null,
+      );
     if (button.dataset.richColor)
       applyRichCommand("foreColor", button.dataset.richColor);
   });
@@ -1502,7 +1566,9 @@ $("#item-settings-form").onsubmit = (event) => {
       const nextTitle = String(data.get("title") || "").trim();
       if (nextTitle !== node.title) delete node.titleHtml;
       node.title = nextTitle;
-      node.subtitle = String(data.get("subtitle") || "").trim();
+      const nextSubtitle = String(data.get("subtitle") || "").trim();
+      if (nextSubtitle !== (node.subtitle || "")) delete node.subtitleHtml;
+      node.subtitle = nextSubtitle;
       node.note = String(data.get("note") || "");
     } else if (itemSettingsSection === "appearance") {
       node.color = data.get("noColor") ? null : String(data.get("color"));
@@ -1654,7 +1720,9 @@ function updateNodeFromPanel() {
   const nextTitle = $("#note-title").value.trim();
   if (nextTitle !== n.title) delete n.titleHtml;
   n.title = nextTitle;
-  n.subtitle = $("#note-subtitle").value.trim();
+  const nextSubtitle = $("#note-subtitle").value.trim();
+  if (nextSubtitle !== (n.subtitle || "")) delete n.subtitleHtml;
+  n.subtitle = nextSubtitle;
   n.note = $("#note-text").value;
   n.tags = $("#note-tags")
     .value.split(",")

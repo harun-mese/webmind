@@ -15,6 +15,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Stil, seçim ve detay işlemlerinde iframe/video/harita/ses DOM'unu yerinde koruyan, hareket sırasında frame-sınırlı canvas çizimi
 - Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
 - Alt başlığı canvas üzerinde çift tıklayarak doğrudan düzenleyebilme
+- Başlık ve alt başlıkta kelime bazlı seçim; kalın, italik, altı çizili, vurgu ve renk balonu
 - Yalnızca gerçek tıklamada açılan detay paneli ve panelden düzenlenebilen harici öğe bağlantıları
 - Header detay toggle’ı ve More düğmesinden açılan öğe ayarları context menüsü
 - Detay panelinden bağımsız, context menü seçenekleri için merkezde açılan öğe ayarları modalı

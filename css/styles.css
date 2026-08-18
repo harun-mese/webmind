@@ -2759,3 +2759,43 @@ body.sidebar-open .zoom-controls {
     font-size: 13px;
   }
 }
+
+/* Bootstrap Icons and consistently centered button glyphs */
+button,
+.icon-button,
+.button {
+  align-items: center;
+  justify-content: center;
+}
+button > svg,
+.icon-button > svg,
+.button > svg {
+  display: block;
+  flex: 0 0 auto;
+  margin: auto;
+}
+.icon-button svg.bi,
+.rich-text-toolbar svg.bi {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+  stroke: none;
+}
+.node-subtitle {
+  margin-top: 7px;
+}
+.mind-node.item-text .node-subtitle {
+  padding-top: 6px;
+}
+.node-more {
+  padding: 0;
+}
+.node-more svg.bi,
+.item-context-menu svg.bi {
+  display: block;
+  width: 17px;
+  height: 17px;
+  margin: auto;
+  fill: currentColor;
+  stroke: none;
+}
