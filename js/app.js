@@ -130,7 +130,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   edgeFrame = null,
   renderedMap = null,
   suppressNodeClick = null,
-  pinch = null;
+  pinch = null,
+  itemSettingsSection = null;
 const touchPoints = new Map();
 const canvas = $("#canvas"),
   nodeLayer = $("#node-layer"),
@@ -1387,45 +1388,140 @@ function syncDetailsToggle() {
   $("#details-toggle").setAttribute("aria-pressed", String(open));
   $("#details-toggle").classList.toggle("active", open);
 }
+function selectOptions(options, selected) {
+  return options
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === selected ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+function openItemSettingsDialog(section) {
+  const node = map().nodes.find((item) => item.id === selectedNodeId);
+  if (!node) return;
+  itemSettingsSection = section;
+  const fields = $("#item-settings-fields");
+  const titles = {
+    content: "Metinler",
+    appearance: "Görünüm",
+    layout: "Yerleşim",
+    link: "Bağlantı",
+  };
+  $("#item-settings-title").textContent = titles[section] || "Ayarlar";
+  if (section === "content") {
+    fields.innerHTML = `<label>Başlık<input name="title" maxlength="100" value="${escapeAttribute(node.title || "")}"></label><label>Alt başlık<input name="subtitle" maxlength="160" value="${escapeAttribute(node.subtitle || "")}"></label><label>Not<textarea name="note" rows="5">${escapeHtml(node.note || "")}</textarea></label>`;
+  } else if (section === "appearance") {
+    fields.innerHTML = `<label>Renk<input name="color" type="color" value="${node.color || "#fff0a8"}"></label><label class="settings-check"><input name="noColor" type="checkbox" ${node.color ? "" : "checked"}> Renk kullanma</label><label>Yazı karakteri<select name="font">${selectOptions(
+      [
+        ["indie", "Indie Flower"],
+        ["caveat", "Caveat"],
+        ["patrick", "Patrick Hand"],
+        ["kalam", "Kalam"],
+        ["rounded", "Rounded"],
+      ],
+      node.font || "indie",
+    )}</select></label><label>Stil<select name="style">${selectOptions(
+      [
+        ["soft", "Yumuşak"],
+        ["note", "Not"],
+        ["outline", "Çizgi"],
+        ["glass", "Cam"],
+        ["none", "None"],
+        ["borderless", "Borderless"],
+        ["pill", "Kapsül"],
+        ["sketch", "Eskiz"],
+        ["solid", "Dolu"],
+      ],
+      node.style || "soft",
+    )}</select></label>`;
+  } else if (section === "layout") {
+    fields.innerHTML = `<label>Hizalama<select name="align">${selectOptions(
+      [
+        ["left", "Sol"],
+        ["center", "Orta"],
+        ["right", "Sağ"],
+      ],
+      node.align || "center",
+    )}</select></label><label>İçerik sırası<select name="layout">${selectOptions(
+      [
+        ["title-media-subtitle", "Başlık · İçerik · Alt"],
+        ["title-subtitle-media", "Başlık · Alt · İçerik"],
+        ["media-title-subtitle", "İçerik · Başlık · Alt"],
+      ],
+      node.layout || "media-title-subtitle",
+    )}</select></label><label>Boyut<select name="size">${selectOptions(
+      [
+        ["small", "Small"],
+        ["medium", "Medium"],
+        ["large", "Large"],
+      ],
+      node.size || "medium",
+    )}</select></label>`;
+  } else {
+    const link = nodeEditableLink(node);
+    fields.innerHTML =
+      link === null
+        ? `<p class="settings-unavailable">Bu öğe yerel veri kullanıyor; düzenlenebilir harici bağlantısı yok.</p>`
+        : `<label>Bağlantı<input name="link" type="${node.type === "map" ? "text" : "url"}" value="${escapeAttribute(link)}"></label>`;
+  }
+  $("#item-settings-dialog").showModal();
+}
 $("#details-toggle").onclick = () => {
   const panel = $("#note-panel");
   if (panel.classList.contains("open")) {
     panel.classList.remove("open");
-  } else if (selectedNodeId) {
+  } else {
     renderNote();
     panel.classList.add("open");
-  } else {
-    toast("Önce bir öğe seç.");
   }
   syncDetailsToggle();
 };
 $$("#item-context-menu [data-detail-section]").forEach((button) => {
   button.onclick = () => {
     if (!selectedNodeId) return;
-    if (!$("#note-panel").classList.contains("open")) {
-      $("#item-context-menu").hidden = true;
-      toast("Ayarlar için header'daki detay düğmesini aç.");
-      return;
-    }
-    const targets = {
-      content: "#note-title",
-      appearance: ".color-row",
-      layout: "#node-layout-field",
-      link: "#node-link-field",
-    };
-    selectNode(selectedNodeId);
-    syncDetailsToggle();
     $("#item-context-menu").hidden = true;
-    requestAnimationFrame(() => {
-      let target = $(targets[button.dataset.detailSection]);
-      if (!target || target.hidden) {
-        toast("Bu ayar seçili öğe için kullanılamıyor.");
-        target = $("#note-title");
-      }
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      target.matches("input,textarea,select") && target.focus();
-    });
+    openItemSettingsDialog(button.dataset.detailSection);
   };
+});
+$("#close-item-settings").onclick = $("#cancel-item-settings").onclick = () =>
+  $("#item-settings-dialog").close();
+$("#item-settings-form").onsubmit = (event) => {
+  event.preventDefault();
+  const node = map().nodes.find((item) => item.id === selectedNodeId);
+  if (!node) return;
+  const data = new FormData(event.currentTarget);
+  if (itemSettingsSection === "link") {
+    const link = data.get("link");
+    if (link !== null) {
+      $("#node-link").value = String(link);
+      $("#node-link").dispatchEvent(new Event("change"));
+    }
+  } else {
+    snapshot();
+    if (itemSettingsSection === "content") {
+      const nextTitle = String(data.get("title") || "").trim();
+      if (nextTitle !== node.title) delete node.titleHtml;
+      node.title = nextTitle;
+      node.subtitle = String(data.get("subtitle") || "").trim();
+      node.note = String(data.get("note") || "");
+    } else if (itemSettingsSection === "appearance") {
+      node.color = data.get("noColor") ? null : String(data.get("color"));
+      node.font = String(data.get("font"));
+      node.style = String(data.get("style"));
+    } else if (itemSettingsSection === "layout") {
+      node.align = String(data.get("align"));
+      node.layout = String(data.get("layout"));
+      node.size = String(data.get("size"));
+    }
+    renderNodes();
+    renderEdges();
+    renderNote();
+    scheduleSave();
+  }
+  $("#item-settings-dialog").close();
+};
+$("#item-settings-dialog").addEventListener("pointerdown", (event) => {
+  if (event.target === event.currentTarget) event.currentTarget.close();
 });
 $$("[data-style-group]").forEach(
   (select) =>

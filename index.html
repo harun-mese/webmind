@@ -656,6 +656,32 @@
       </button>
     </div>
 
+    <dialog id="item-settings-dialog" class="item-settings-dialog">
+      <form id="item-settings-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <span class="eyebrow">ÖĞE AYARLARI</span>
+            <h2 id="item-settings-title">Ayarlar</h2>
+          </div>
+          <button
+            id="close-item-settings"
+            type="button"
+            class="icon-button"
+            aria-label="Kapat"
+          >
+            ×
+          </button>
+        </div>
+        <div id="item-settings-fields"></div>
+        <div class="dialog-actions">
+          <button id="cancel-item-settings" type="button" class="button">
+            Vazgeç
+          </button>
+          <button type="submit" class="button primary-button">Kaydet</button>
+        </div>
+      </form>
+    </dialog>
+
     <div
       id="rich-text-toolbar"
       class="rich-text-toolbar"

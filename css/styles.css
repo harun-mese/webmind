@@ -2687,3 +2687,75 @@ body.sidebar-open .zoom-controls {
     width: min(248px, calc(100vw - 24px));
   }
 }
+
+/* Centered, panel-independent item settings */
+.item-settings-dialog {
+  width: min(92vw, 430px);
+  max-height: min(82vh, 680px);
+  overflow: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: #fffdfa;
+  box-shadow: 0 28px 90px rgba(32, 27, 21, 0.28);
+}
+.item-settings-dialog::backdrop {
+  background: rgba(26, 23, 19, 0.34);
+  backdrop-filter: blur(3px);
+}
+.item-settings-dialog form {
+  padding: 22px;
+}
+.item-settings-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.item-settings-dialog input,
+.item-settings-dialog textarea,
+.item-settings-dialog select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  font:
+    14px ui-rounded,
+    system-ui,
+    sans-serif;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.item-settings-dialog input[type="color"] {
+  height: 42px;
+  padding: 4px;
+}
+.item-settings-dialog .settings-check {
+  flex-direction: row;
+}
+.item-settings-dialog .settings-check input {
+  width: 16px;
+}
+.settings-unavailable {
+  padding: 14px;
+  border-radius: 12px;
+  background: #f4eee4;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+@media (max-width: 700px) {
+  .item-settings-dialog {
+    width: calc(100vw - 24px);
+    max-height: 84dvh;
+  }
+  .item-settings-dialog .dialog-actions .button {
+    font-size: 13px;
+  }
+}
