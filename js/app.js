@@ -1213,12 +1213,22 @@ $("#redo-btn").onclick = () => {
   scheduleSave();
 };
 window.addEventListener("keydown", (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+  const target = e.target instanceof Element ? e.target : null;
+  const isInlineEditing = Boolean(
+    target?.closest('[contenteditable="true"]') ||
+    document.activeElement?.isContentEditable,
+  );
+  if (
+    !isInlineEditing &&
+    (e.ctrlKey || e.metaKey) &&
+    e.key.toLowerCase() === "z"
+  ) {
     e.preventDefault();
     e.shiftKey ? $("#redo-btn").click() : $("#undo-btn").click();
   }
   if (
     (e.key === "Delete" || e.key === "Backspace") &&
+    !isInlineEditing &&
     !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
   ) {
     selectedNodeId
