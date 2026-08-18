@@ -251,7 +251,9 @@
                 ×
               </button>
             </div>
-            <label>Başlık<input id="note-title" maxlength="100" /></label>
+            <label
+              >Başlık (isteğe bağlı)<input id="note-title" maxlength="100"
+            /></label>
             <label
               >Not<textarea
                 id="note-text"
@@ -664,7 +666,7 @@
           aria-label="Öğe türü"
         >
           <button type="button" class="item-type active" data-type="text">
-            <span>✎</span><strong>Metin</strong>
+            <span>✎</span><strong>Rich text</strong>
           </button>
           <button type="button" class="item-type" data-type="image">
             <span>▧</span><strong>Görsel</strong>
@@ -690,10 +692,10 @@
         </div>
         <input id="item-type" type="hidden" value="text" />
         <label class="dialog-field"
-          >Başlık<input
+          >Metin / başlık (isteğe bağlı)<input
             id="item-title"
             maxlength="100"
-            placeholder="Yeni fikir"
+            placeholder="Boş bırakılabilir"
         /></label>
         <label id="item-url-field" class="dialog-field" hidden
           ><span id="item-url-label">Bağlantı</span

@@ -261,7 +261,7 @@ function renderNodes() {
     el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasVisibleColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--player-ink:${playerInk};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
-    el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title)} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
+    el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title || "Başlıksız öğe")} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
     const title = el.querySelector(".node-title");
     if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
     else title.textContent = n.title;
@@ -292,7 +292,7 @@ function renderNodeMedia(node) {
   if (node.type === "image" && node.mediaUrl)
     return `<div class="node-media image-frame image-shape-${node.imageShape || "original"}"><img src="${escapeAttribute(node.mediaUrl)}" alt="" draggable="false"></div>`;
   if (node.type === "youtube" && node.mediaUrl)
-    return `<div class="node-media"><iframe src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.mediaUrl)}" title="${escapeAttribute(node.title)}" loading="lazy" allowfullscreen></iframe></div>`;
+    return `<div class="node-media"><iframe src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.mediaUrl)}" title="${escapeAttribute(node.title || "YouTube videosu")}" loading="lazy" allowfullscreen></iframe></div>`;
   if (node.type === "website" && node.mediaUrl) {
     const safeUrl = normalizeWebUrl(node.mediaUrl);
     if (!safeUrl) return "";
@@ -303,10 +303,10 @@ function renderNodeMedia(node) {
   if (node.type === "map" && node.mapLocation) {
     const { lat, lng } = node.mapLocation;
     const src = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-    return `<div class="node-media"><iframe class="map-frame" src="${escapeAttribute(src)}" title="${escapeAttribute(node.title)}" loading="lazy"></iframe></div>`;
+    return `<div class="node-media"><iframe class="map-frame" src="${escapeAttribute(src)}" title="${escapeAttribute(node.title || "Google Maps konumu")}" loading="lazy"></iframe></div>`;
   }
   if (node.type === "music" && node.youtubeId)
-    return `<div class="node-media"><iframe class="music-youtube" src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.youtubeId)}" title="${escapeAttribute(node.title)}" loading="lazy" allow="autoplay; encrypted-media"></iframe></div>`;
+    return `<div class="node-media"><iframe class="music-youtube" src="https://www.youtube-nocookie.com/embed/${escapeAttribute(node.youtubeId)}" title="${escapeAttribute(node.title || "YouTube müziği")}" loading="lazy" allow="autoplay; encrypted-media"></iframe></div>`;
   if (["music", "recording"].includes(node.type) && node.mediaUrl)
     return renderAudioPlayer(node);
   if (node.type === "file")
@@ -440,18 +440,21 @@ function editTitle(el, n) {
     el.contentEditable = "false";
     const next = cancel ? original : el.textContent.trim();
     const formatted = sanitizeRichText(el.innerHTML);
-    if (!cancel && next && (next !== n.title || formatted !== originalHtml)) {
+    if (!cancel && (next !== n.title || formatted !== originalHtml)) {
       snapshot();
       n.title = next;
-      n.titleHtml = formatted;
+      n.titleHtml = next ? formatted : "";
       scheduleSave();
       renderAll();
     } else el.innerHTML = originalHtml;
   };
   el.onkeydown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && n.type !== "text") {
       e.preventDefault();
       el.blur();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      document.execCommand("insertLineBreak");
     }
     if (e.key === "Escape") {
       e.preventDefault();
@@ -1036,18 +1039,7 @@ async function createItemFromDialog() {
       id: uid(),
       type,
       style: map().appearance.itemStyles?.[type] || "soft",
-      title:
-        $("#item-title").value.trim() ||
-        {
-          text: "Yeni fikir",
-          image: "Yeni görsel",
-          youtube: "YouTube videosu",
-          file: file?.name || "Yeni dosya",
-          website: "Web sitesi",
-          map: "Harita konumu",
-          music: file?.name || "Müzik",
-          recording: "Ses kaydı",
-        }[type],
+      title: $("#item-title").value.trim(),
       x: position.x - (type === "text" ? 78 : 115),
       y: position.y - 31,
       color: COLORS[map().nodes.length % COLORS.length],
@@ -1254,7 +1246,7 @@ function updateNodeFromPanel() {
   const n = map().nodes.find((n) => n.id === selectedNodeId);
   if (!n) return;
   snapshot();
-  const nextTitle = $("#note-title").value.trim() || n.title;
+  const nextTitle = $("#note-title").value.trim();
   if (nextTitle !== n.title) delete n.titleHtml;
   n.title = nextTitle;
   n.note = $("#note-text").value;

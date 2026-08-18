@@ -2364,3 +2364,7 @@ body.sidebar-open .zoom-controls {
 #note-text {
   min-height: 92px;
 }
+
+.mind-node.media-node .node-title:empty {
+  display: none;
+}
