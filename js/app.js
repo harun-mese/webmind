@@ -298,7 +298,10 @@ function renderNodeMedia(node) {
     if (!safeUrl) return "";
     const host = new URL(safeUrl).hostname.replace(/^www\./, "");
     const favicon = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(safeUrl)}`;
-    return `<div class="node-media website-card"><span class="website-icon"><img src="${escapeAttribute(favicon)}" alt="" loading="lazy"><b>◎</b></span><span><strong>${escapeHtml(host)}</strong><small>${escapeHtml(safeUrl)}</small></span></div>`;
+    const metadata = node.websiteMetadata || {};
+    const preview = node.websitePreview !== false;
+    const image = preview ? normalizeWebUrl(metadata.image) : null;
+    return `<div class="node-media website-card ${preview ? "with-preview" : "compact"}">${image ? `<img class="website-preview-image" src="${escapeAttribute(image)}" alt="" loading="lazy">` : ""}<span class="website-summary"><span class="website-icon"><img src="${escapeAttribute(favicon)}" alt="" loading="lazy"><b>◎</b></span><span><strong>${escapeHtml(preview && metadata.title ? metadata.title : host)}</strong>${preview && metadata.description ? `<small class="website-description">${escapeHtml(metadata.description)}</small>` : `<small>${escapeHtml(safeUrl)}</small>`}</span></span></div>`;
   }
   if (node.type === "map" && node.mapLocation) {
     const { lat, lng } = node.mapLocation;
@@ -659,6 +662,8 @@ function renderNote() {
   $("#node-width-field").hidden = !isText;
   $("#node-size-field").hidden = isText;
   $("#image-shape-field").hidden = !isImage;
+  $("#website-preview-field").hidden = n.type !== "website";
+  $("#website-preview").checked = n.websitePreview !== false;
   if (isText) {
     const width = n.customWidth || n.renderWidth || 156;
     $("#node-width").value = width;
@@ -923,6 +928,7 @@ function setItemType(type) {
   $("#item-url-field").hidden = !needsUrl;
   $("#item-file-field").hidden = !needsFile;
   $("#recording-field").hidden = type !== "recording";
+  $("#item-website-preview-field").hidden = type !== "website";
   $("#item-url").type = type === "map" ? "text" : "url";
   $("#item-url").placeholder =
     type === "youtube"
@@ -1031,6 +1037,27 @@ function readFileAsDataUrl(file) {
     reader.readAsDataURL(file);
   });
 }
+async function fetchWebsiteMetadata(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4500);
+  try {
+    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(url)}`;
+    const response = await fetch(endpoint, { signal: controller.signal });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    const data = payload?.data;
+    if (!data) return null;
+    return {
+      title: String(data.title || "").slice(0, 140),
+      description: String(data.description || "").slice(0, 240),
+      image: normalizeWebUrl(data.image?.url || data.image || ""),
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 async function createItemFromDialog() {
   const type = $("#item-type").value,
     file = $("#item-file").files[0],
@@ -1076,6 +1103,9 @@ async function createItemFromDialog() {
     node.mediaUrl = normalizeWebUrl($("#item-url").value.trim());
     if (!node.mediaUrl)
       throw new Error("Geçerli bir web sitesi bağlantısı gir.");
+    node.websitePreview = $("#item-website-preview").checked;
+    if (node.websitePreview)
+      node.websiteMetadata = await fetchWebsiteMetadata(node.mediaUrl);
   }
   if (type === "map") {
     node.mapLocation = parseMapLocation($("#item-url").value.trim());
@@ -1260,6 +1290,17 @@ function updateNodeFromPanel() {
 $("#note-title").onchange = updateNodeFromPanel;
 $("#note-text").onchange = updateNodeFromPanel;
 $("#note-tags").onchange = updateNodeFromPanel;
+$("#website-preview").onchange = async (event) => {
+  const node = map().nodes.find((item) => item.id === selectedNodeId);
+  if (!node || node.type !== "website") return;
+  snapshot();
+  node.websitePreview = event.target.checked;
+  if (node.websitePreview && !node.websiteMetadata)
+    node.websiteMetadata = await fetchWebsiteMetadata(node.mediaUrl);
+  renderNodes();
+  renderEdges();
+  scheduleSave();
+};
 $("#node-font").onchange = (event) => {
   const node = map().nodes.find((item) => item.id === selectedNodeId);
   if (!node || node.font === event.target.value) return;

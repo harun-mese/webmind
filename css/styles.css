@@ -2368,3 +2368,63 @@ body.sidebar-open .zoom-controls {
 .mind-node.media-node .node-title:empty {
   display: none;
 }
+
+/* None is intentionally free of every card surface, including nested media. */
+.mind-node.style-none,
+.mind-node.style-none.no-color {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.mind-node.style-none .node-media,
+.mind-node.style-none .music-card,
+.mind-node.style-none .website-card {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.website-card.with-preview {
+  display: block;
+  padding: 0;
+}
+.website-preview-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.website-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+.website-summary > span:last-child {
+  min-width: 0;
+}
+.website-description {
+  display: -webkit-box !important;
+  max-width: 180px;
+  overflow: hidden;
+  white-space: normal !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.checkbox-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.checkbox-line input,
+#website-preview {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}

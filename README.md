@@ -7,6 +7,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Tuvalde çift tıklayarak fikir oluşturma
 - Üstteki **Yeni öğe** menüsüyle metin, görsel, YouTube videosu ve dosya kartları ekleme
 - Faviconlu web sitesi kartları, Google Maps konumları ve oynatılabilir müzik öğeleri
+- Açılıp kapatılabilen görsel, başlık ve açıklamalı web sitesi metadata önizlemeleri
 - Dosya veya bağlantıdan görsel; dosya, doğrudan ses URL'si veya YouTube'dan müzik ekleme
 - Görseller için orijinal oran, kare, rounded ve circle çerçeve seçenekleri
 - Öğe bazında None ve Borderless dahil farklı kart stilleri
