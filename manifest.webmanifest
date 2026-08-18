@@ -1,0 +1,18 @@
+{
+  "name": "WebMind — Zihin Haritası",
+  "short_name": "WebMind",
+  "description": "Çevrimdışı çalışan zihin haritası ve not uygulaması.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f8f3e7",
+  "theme_color": "#f8f3e7",
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f8f3e7" />
+    <meta
+      name="description"
+      content="Çevrimdışı çalışan, sade zihin haritası ve not uygulaması."
+    />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="assets/icons/favicon.png"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&amp;family=Indie+Flower&amp;family=Kalam:wght@300;400&amp;family=Patrick+Hand&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>WebMind</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <button
+          id="sidebar-toggle"
+          class="icon-button toolbar-icon"
+          title="Haritaları aç"
+          aria-label="Haritaları aç"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <nav class="toolbar" aria-label="Harita araçları">
+          <button
+            id="undo-btn"
+            class="icon-button"
+            title="Geri al (Ctrl+Z)"
+            aria-label="Geri al"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6" />
+            </svg>
+          </button>
+          <button
+            id="redo-btn"
+            class="icon-button"
+            title="İleri al (Ctrl+Shift+Z)"
+            aria-label="İleri al"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 7 5 5-5 5m4-5h-8a6 6 0 0 0-6 6" />
+            </svg>
+          </button>
+          <button
+            id="fit-btn"
+            class="icon-button"
+            title="Haritayı ekrana sığdır"
+            aria-label="Haritayı ekrana sığdır"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5" />
+            </svg>
+          </button>
+          <button
+            id="add-item-btn"
+            class="icon-button primary-button"
+            title="Yeni öğe"
+            aria-label="Yeni öğe"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+          <button
+            id="appearance-btn"
+            class="icon-button"
+            title="Görünüm"
+            aria-label="Görünüm"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 3a9 9 0 1 0 0 18c1.2 0 2-1.2 1.4-2.2-.7-1.2.2-2.8 1.6-2.8h2.5c2 0 3.5-1.8 2.8-3.7A9 9 0 0 0 12 3Z"
+              />
+              <circle cx="7.5" cy="11" r=".8" />
+              <circle cx="10" cy="7" r=".8" />
+              <circle cx="15" cy="8" r=".8" />
+            </svg>
+          </button>
+          <button
+            id="settings-btn"
+            class="icon-button"
+            title="Stil ayarları"
+            aria-label="Stil ayarları"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1v.1h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1-.4h-.1v-4H3A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1v-.1h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.38.34.72.66 1 .28.25.63.38 1 .4h.1v4h-.1a1.7 1.7 0 0 0-1.66.6Z"
+              />
+            </svg>
+          </button>
+          <button
+            id="export-btn"
+            class="icon-button"
+            title="JSON olarak dışa aktar"
+            aria-label="Dışa aktar"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12m-4-4 4 4 4-4M5 19h14" />
+            </svg>
+          </button>
+          <label
+            class="icon-button file-label"
+            title="JSON dosyasından içe aktar"
+            aria-label="İçe aktar"
+            ><svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 16V4m-4 4 4-4 4 4M5 20h14" /></svg
+            ><input
+              id="import-input"
+              type="file"
+              accept="application/json,.json"
+          /></label>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar" aria-label="Haritalar">
+          <button
+            id="sidebar-close"
+            class="icon-button sidebar-close"
+            title="Haritaları kapat"
+            aria-label="Haritaları kapat"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+          <div class="sidebar-map-meta">
+            <input
+              id="map-title"
+              class="map-title"
+              value="İlk Haritam"
+              aria-label="Harita adı"
+              maxlength="80"
+            />
+            <span id="save-state" class="save-state" aria-live="polite"
+              ><span class="status-dot"></span> Kaydedildi</span
+            >
+          </div>
+          <div class="sidebar-heading">
+            <span>Haritalarım</span
+            ><button
+              id="new-map-btn"
+              class="small-add"
+              title="Yeni harita"
+              aria-label="Yeni harita"
+            >
+              +
+            </button>
+          </div>
+          <div id="map-list" class="map-list"></div>
+          <div class="sidebar-tip">
+            <span>✦</span>
+            <p>Tuvalde boş bir alana çift tıklayarak yeni bir fikir ekle.</p>
+          </div>
+        </aside>
+
+        <section class="canvas-shell" aria-label="Zihin haritası çalışma alanı">
+          <div id="canvas" class="canvas pattern-dots" tabindex="0">
+            <svg
+              id="edge-layer"
+              class="edge-layer"
+              aria-label="Düğüm bağlantıları"
+            >
+              <defs>
+                <marker
+                  id="arrow-end"
+                  markerWidth="9"
+                  markerHeight="9"
+                  refX="8"
+                  refY="4.5"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <path
+                    d="M1,1 L8,4.5 L1,8"
+                    fill="none"
+                    stroke="context-stroke"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </marker>
+                <marker
+                  id="arrow-start"
+                  markerWidth="9"
+                  markerHeight="9"
+                  refX="8"
+                  refY="4.5"
+                  orient="auto-start-reverse"
+                  markerUnits="strokeWidth"
+                >
+                  <path
+                    d="M1,1 L8,4.5 L1,8"
+                    fill="none"
+                    stroke="context-stroke"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </marker>
+              </defs>
+              <g id="viewport-edges"></g>
+            </svg>
+            <div id="node-layer" class="node-layer"></div>
+            <div id="empty-state" class="empty-state" hidden>
+              <span class="empty-icon">✦</span><strong>İlk fikrini ekle</strong
+              ><span>Tuvalde herhangi bir yere çift tıkla</span>
+            </div>
+          </div>
+          <div class="zoom-controls" aria-label="Yakınlaştırma kontrolleri">
+            <button id="zoom-out" aria-label="Uzaklaştır">−</button
+            ><span id="zoom-value">100%</span
+            ><button id="zoom-in" aria-label="Yakınlaştır">+</button>
+          </div>
+          <div class="canvas-hint">
+            Çift tıkla: yeni fikir · Sürükle: taşı · Noktadan sürükle: bağla
+          </div>
+        </section>
+
+        <aside id="note-panel" class="note-panel" aria-label="Düğüm notları">
+          <div class="note-empty">
+            <span></span>
+          </div>
+          <div class="note-content" hidden>
+            <div class="panel-heading">
+              <span>Fikir detayları</span
+              ><button
+                id="close-note"
+                class="icon-button"
+                aria-label="Not panelini kapat"
+              >
+                ×
+              </button>
+            </div>
+            <label
+              >Başlık (isteğe bağlı)<input id="note-title" maxlength="100"
+            /></label>
+            <label
+              >Alt başlık (isteğe bağlı)<input
+                id="note-subtitle"
+                maxlength="160"
+                placeholder="Kısa bir açıklama"
+            /></label>
+            <label
+              >Not<textarea
+                id="note-text"
+                rows="5"
+                placeholder="Aklındakileri buraya yaz..."
+              ></textarea>
+            </label>
+            <label
+              >Etiketler<input
+                id="note-tags"
+                placeholder="fikir, araştırma, önemli"
+            /></label>
+            <a
+              id="open-attachment"
+              class="attachment-button"
+              hidden
+              target="_blank"
+              rel="noopener"
+              >İçeriği aç ↗</a
+            >
+            <label id="node-link-field" hidden
+              >Bağlantı<input
+                id="node-link"
+                type="url"
+                placeholder="https://..."
+            /></label>
+            <label id="website-preview-field" class="settings-check" hidden
+              ><input id="website-preview" type="checkbox" /> Site görseli,
+              başlığı ve açıklamasını göster</label
+            >
+            <div class="color-row">
+              <span>Fikir rengi</span>
+              <div id="node-colors" class="color-swatches"></div>
+            </div>
+            <label class="node-font-field"
+              >Yazı karakteri
+              <select id="node-font">
+                <option value="indie">Indie Flower</option>
+                <option value="caveat">Caveat</option>
+                <option value="patrick">Patrick Hand</option>
+                <option value="kalam">Kalam</option>
+                <option value="rounded">Rounded</option>
+              </select>
+            </label>
+            <label class="node-font-size-field"
+              >Yazı boyutu <output id="node-font-size-output">20px</output>
+              <input
+                id="node-font-size"
+                type="range"
+                min="12"
+                max="42"
+                step="1"
+              />
+            </label>
+            <fieldset class="node-style-field">
+              <legend>Öğe stili</legend>
+              <div id="node-style-options" class="node-style-options">
+                <button type="button" data-node-style="soft">Yumuşak</button>
+                <button type="button" data-node-style="note">Not</button>
+                <button type="button" data-node-style="outline">Çizgi</button>
+                <button type="button" data-node-style="glass">Cam</button>
+                <button type="button" data-node-style="none">None</button>
+                <button type="button" data-node-style="borderless">
+                  Borderless
+                </button>
+                <button type="button" data-node-style="pill">Kapsül</button>
+                <button type="button" data-node-style="sketch">Eskiz</button>
+                <button type="button" data-node-style="solid">Dolu</button>
+              </div>
+            </fieldset>
+            <fieldset class="node-align-field">
+              <legend>Başlık hizası</legend>
+              <div id="node-align-options" class="node-align-options">
+                <button
+                  type="button"
+                  data-node-align="left"
+                  aria-label="Sola hizala"
+                >
+                  ≡
+                </button>
+                <button
+                  type="button"
+                  data-node-align="center"
+                  aria-label="Ortala"
+                >
+                  ≡
+                </button>
+                <button
+                  type="button"
+                  data-node-align="right"
+                  aria-label="Sağa hizala"
+                >
+                  ≡
+                </button>
+              </div>
+            </fieldset>
+            <fieldset id="node-layout-field" class="node-layout-field" hidden>
+              <legend>İçerik sırası</legend>
+              <div id="node-layout-options" class="node-layout-options">
+                <button type="button" data-node-layout="title-media-subtitle">
+                  Başlık · İçerik · Alt
+                </button>
+                <button type="button" data-node-layout="title-subtitle-media">
+                  Başlık · Alt · İçerik
+                </button>
+                <button type="button" data-node-layout="media-title-subtitle">
+                  İçerik · Başlık · Alt
+                </button>
+              </div>
+            </fieldset>
+            <fieldset id="node-width-field" class="node-width-field">
+              <legend>
+                Metin genişliği <output id="node-width-output">Otomatik</output>
+              </legend>
+              <input id="node-width" type="range" min="64" max="320" step="4" />
+              <button id="node-width-auto" type="button">
+                Metne göre ayarla
+              </button>
+            </fieldset>
+            <fieldset id="node-size-field" class="node-size-field" hidden>
+              <legend>Öğe boyutu</legend>
+              <div id="node-size-options" class="node-size-options">
+                <button type="button" data-node-size="small">Small</button>
+                <button type="button" data-node-size="medium">Medium</button>
+                <button type="button" data-node-size="large">Large</button>
+              </div>
+            </fieldset>
+            <fieldset id="image-shape-field" class="image-shape-field" hidden>
+              <legend>Görsel biçimi</legend>
+              <div id="image-shape-options" class="image-shape-options">
+                <button type="button" data-image-shape="original">
+                  Orijinal
+                </button>
+                <button type="button" data-image-shape="square">Kare</button>
+                <button type="button" data-image-shape="rounded">
+                  Rounded
+                </button>
+                <button type="button" data-image-shape="circle">Circle</button>
+              </div>
+            </fieldset>
+            <button id="delete-node" class="danger-button">Fikri sil</button>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="appearance-popover" class="popover appearance-popover" hidden>
+      <div class="popover-title">
+        <strong>Tuval görünümü</strong
+        ><button class="popover-close" aria-label="Kapat">×</button>
+      </div>
+      <fieldset class="theme-fieldset">
+        <legend>Hazır temalar</legend>
+        <div id="theme-presets" class="theme-presets">
+          <button data-theme="light"><i></i><span>Light</span></button>
+          <button data-theme="dark"><i></i><span>Dark</span></button>
+          <button data-theme="sage"><i></i><span>Sage</span></button>
+          <button data-theme="rose"><i></i><span>Rose</span></button>
+          <button data-theme="lavender"><i></i><span>Lavanta</span></button>
+          <button data-theme="sky"><i></i><span>Sky</span></button>
+          <button data-theme="peach"><i></i><span>Peach</span></button>
+        </div>
+      </fieldset>
+      <label>Arka plan rengi<input id="canvas-color" type="color" /></label>
+      <label>Desen rengi<input id="pattern-color" type="color" /></label>
+      <fieldset>
+        <legend>Desen</legend>
+        <div id="pattern-options" class="segmented">
+          <button data-pattern="dots">Nokta</button
+          ><button data-pattern="grid">Kare</button
+          ><button data-pattern="lines">Çizgi</button
+          ><button data-pattern="none">Boş</button>
+        </div>
+      </fieldset>
+      <label
+        >Desen aralığı <output id="spacing-output">24px</output
+        ><input id="pattern-spacing" type="range" min="12" max="48" step="2"
+      /></label>
+      <hr />
+      <label>Varsayılan ok rengi<input id="arrow-color" type="color" /></label>
+    </div>
+
+    <div id="settings-popover" class="popover settings-popover" hidden>
+      <div class="popover-title">
+        <strong>Öğe stilleri</strong
+        ><button class="popover-close" aria-label="Kapat">×</button>
+      </div>
+      <p class="settings-description">
+        Yeni öğeler için varsayılan görünümü belirle veya mevcut gruba topluca
+        uygula.
+      </p>
+      <label
+        >Tüm öğeler<select id="all-item-style">
+          <option value="">Karışık / değiştirme</option>
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <button id="apply-all-style" class="settings-apply">
+        Tüm mevcut öğelere uygula
+      </button>
+      <hr />
+      <label
+        >Metin öğeleri<select data-style-group="text">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Görseller<select data-style-group="image">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >YouTube videoları<select data-style-group="youtube">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Dosyalar<select data-style-group="file">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Web siteleri<select data-style-group="website">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Haritalar<select data-style-group="map">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Müzik<select data-style-group="music">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label
+        >Ses kayıtları<select data-style-group="recording">
+          <option value="soft">Yumuşak</option>
+          <option value="note">Not</option>
+          <option value="outline">Çizgi</option>
+          <option value="glass">Cam</option>
+          <option value="none">None</option>
+          <option value="borderless">Borderless</option>
+          <option value="pill">Kapsül</option>
+          <option value="sketch">Eskiz</option>
+          <option value="solid">Dolu</option>
+        </select></label
+      >
+      <label class="settings-check"
+        ><input id="apply-group-existing" type="checkbox" checked /> Değişikliği
+        mevcut grup öğelerine de uygula</label
+      >
+    </div>
+
+    <div id="edge-popover" class="popover edge-popover" hidden>
+      <div class="popover-title">
+        <strong>Bağlantı</strong
+        ><button class="popover-close" aria-label="Kapat">×</button>
+      </div>
+      <label
+        >Etiket<input id="edge-label" placeholder="örn. destekler"
+      /></label>
+      <fieldset>
+        <legend>Yön</legend>
+        <div id="edge-direction" class="segmented">
+          <button data-direction="none">—</button
+          ><button data-direction="forward">→</button
+          ><button data-direction="backward">←</button
+          ><button data-direction="both">↔</button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Çizgi</legend>
+        <div id="edge-line-style" class="segmented">
+          <button data-style="solid">Düz</button
+          ><button data-style="dashed">Kesik</button
+          ><button data-style="dotted">Nokta</button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Form</legend>
+        <div id="edge-path-style" class="segmented">
+          <button data-path="curved">Kavis</button
+          ><button data-path="straight">Doğru</button
+          ><button data-path="elbow">Dirsek</button>
+        </div>
+      </fieldset>
+      <label>Ok rengi<input id="edge-color" type="color" /></label>
+      <button id="delete-edge" class="danger-button">Bağlantıyı sil</button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div
+      id="rich-text-toolbar"
+      class="rich-text-toolbar"
+      hidden
+      role="toolbar"
+      aria-label="Metin biçimlendirme"
+    >
+      <button type="button" data-rich-command="bold" aria-label="Kalın">
+        <strong>B</strong>
+      </button>
+      <button
+        type="button"
+        data-rich-command="underline"
+        aria-label="Altı çizili"
+      >
+        <u>U</u>
+      </button>
+      <span class="rich-divider"></span>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#302e29"
+        style="--rich-color: #302e29"
+        aria-label="Koyu renk"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#d85b4a"
+        style="--rich-color: #d85b4a"
+        aria-label="Kırmızı"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#287c72"
+        style="--rich-color: #287c72"
+        aria-label="Yeşil"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#4f6fb5"
+        style="--rich-color: #4f6fb5"
+        aria-label="Mavi"
+      ></button>
+      <button
+        type="button"
+        class="rich-color"
+        data-rich-color="#8a5ba8"
+        style="--rich-color: #8a5ba8"
+        aria-label="Mor"
+      ></button>
+    </div>
+
+    <dialog id="item-dialog" class="item-dialog">
+      <form id="item-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <span class="eyebrow">TUVALE EKLE</span>
+            <h2>Yeni bir öğe oluştur</h2>
+          </div>
+          <button
+            type="button"
+            id="close-item-dialog"
+            class="icon-button"
+            aria-label="Kapat"
+          >
+            ×
+          </button>
+        </div>
+        <div
+          id="item-type-options"
+          class="item-type-options"
+          role="radiogroup"
+          aria-label="Öğe türü"
+        >
+          <button type="button" class="item-type active" data-type="text">
+            <span>✎</span><strong>Rich text</strong>
+          </button>
+          <button type="button" class="item-type" data-type="image">
+            <span>▧</span><strong>Görsel</strong>
+          </button>
+          <button type="button" class="item-type" data-type="youtube">
+            <span>▶</span><strong>YouTube</strong>
+          </button>
+          <button type="button" class="item-type" data-type="file">
+            <span>⌑</span><strong>Dosya</strong>
+          </button>
+          <button type="button" class="item-type" data-type="website">
+            <span>◎</span><strong>Web sitesi</strong>
+          </button>
+          <button type="button" class="item-type" data-type="map">
+            <span>⌖</span><strong>Harita</strong>
+          </button>
+          <button type="button" class="item-type" data-type="music">
+            <span>♫</span><strong>Müzik</strong>
+          </button>
+          <button type="button" class="item-type" data-type="recording">
+            <span>●</span><strong>Ses kaydı</strong>
+          </button>
+        </div>
+        <input id="item-type" type="hidden" value="text" />
+        <label class="dialog-field"
+          >Metin / başlık (isteğe bağlı)<input
+            id="item-title"
+            maxlength="100"
+            placeholder="Boş bırakılabilir"
+        /></label>
+        <label class="dialog-field"
+          >Alt başlık (isteğe bağlı)<input
+            id="item-subtitle"
+            maxlength="160"
+            placeholder="Kısa bir açıklama"
+        /></label>
+        <label id="item-url-field" class="dialog-field" hidden
+          ><span id="item-url-label">Bağlantı</span
+          ><input
+            id="item-url"
+            type="url"
+            placeholder="Bağlantı veya koordinat"
+        /></label>
+        <label id="item-file-field" class="dialog-field file-drop" hidden>
+          <span id="item-file-label">Dosya seç veya buraya bırak</span>
+          <small>Görseller ve küçük dosyalar cihazında saklanır.</small>
+          <input id="item-file" type="file" />
+        </label>
+        <label
+          id="item-website-preview-field"
+          class="dialog-field website-preview-choice"
+          hidden
+          ><span>Web sitesi önizlemesi</span
+          ><span class="checkbox-line"
+            ><input id="item-website-preview" type="checkbox" checked /> Site
+            görseli, başlığı ve açıklamasını getir</span
+          ></label
+        >
+        <div id="recording-field" class="recording-field" hidden>
+          <div class="recording-status">
+            <span id="recording-dot"></span
+            ><strong id="recording-status">Kayda hazır</strong
+            ><time id="recording-time">00:00</time>
+          </div>
+          <div class="recording-actions">
+            <button id="start-recording" type="button">Kaydı başlat</button>
+            <button id="stop-recording" type="button" disabled>
+              Kaydı bitir
+            </button>
+          </div>
+          <audio id="recording-preview" controls hidden></audio>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" id="cancel-item" class="button">Vazgeç</button>
+          <button type="submit" class="button primary-button">
+            Tuvale ekle
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
