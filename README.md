@@ -13,6 +13,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Öğe bazında None ve Borderless dahil farklı kart stilleri
 - İsteğe bağlı, tamamen silinebilen başlıklar ve satır/renk/kalın/altı çizili biçimlendirmeli rich text öğeleri
 - Stil ve seçim işlemlerinde video/ses/görsel öğelerini yeniden yüklemeyen, hareket sırasında frame-sınırlı canvas çizimi
+- Başlık, alt başlık ve medya içeriğini üç farklı sırada yerleştirebilme
 - Mikrofondan doğrudan ses kaydı oluşturma, önizleme ve canvas üzerinde oynatma
 - Sade SVG kontrolleri, ilerleme çizgisi ve süre göstergeli özel ses oynatıcı
 - Liste ikonuyla animasyonlu olarak açılan, başlangıçta kapalı harita paneli

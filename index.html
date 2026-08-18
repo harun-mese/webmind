@@ -255,6 +255,12 @@
               >Başlık (isteğe bağlı)<input id="note-title" maxlength="100"
             /></label>
             <label
+              >Alt başlık (isteğe bağlı)<input
+                id="note-subtitle"
+                maxlength="160"
+                placeholder="Kısa bir açıklama"
+            /></label>
+            <label
               >Not<textarea
                 id="note-text"
                 rows="5"
@@ -341,6 +347,20 @@
                   aria-label="Sağa hizala"
                 >
                   ≡
+                </button>
+              </div>
+            </fieldset>
+            <fieldset id="node-layout-field" class="node-layout-field" hidden>
+              <legend>İçerik sırası</legend>
+              <div id="node-layout-options" class="node-layout-options">
+                <button type="button" data-node-layout="title-media-subtitle">
+                  Başlık · İçerik · Alt
+                </button>
+                <button type="button" data-node-layout="title-subtitle-media">
+                  Başlık · Alt · İçerik
+                </button>
+                <button type="button" data-node-layout="media-title-subtitle">
+                  İçerik · Başlık · Alt
                 </button>
               </div>
             </fieldset>
@@ -700,6 +720,12 @@
             id="item-title"
             maxlength="100"
             placeholder="Boş bırakılabilir"
+        /></label>
+        <label class="dialog-field"
+          >Alt başlık (isteğe bağlı)<input
+            id="item-subtitle"
+            maxlength="160"
+            placeholder="Kısa bir açıklama"
         /></label>
         <label id="item-url-field" class="dialog-field" hidden
           ><span id="item-url-label">Bağlantı</span

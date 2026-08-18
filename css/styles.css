@@ -2428,3 +2428,82 @@ body.sidebar-open .zoom-controls {
   height: 16px;
   margin: 0;
 }
+
+/* Flexible title, subtitle and media ordering */
+.mind-node.media-node {
+  display: flex;
+  flex-direction: column;
+}
+.node-title,
+.node-subtitle {
+  text-align: var(--title-align, center);
+}
+.node-subtitle {
+  padding: 0 8px 7px;
+  color: color-mix(in srgb, var(--node-text), transparent 28%);
+  font-family: ui-rounded, system-ui, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+.mind-node.item-text .node-subtitle {
+  padding: 2px 0 0;
+}
+.mind-node .node-subtitle:empty {
+  display: none;
+}
+.media-node.layout-title-media-subtitle .node-title,
+.media-node.layout-title-subtitle-media .node-title {
+  order: 1;
+}
+.media-node.layout-title-media-subtitle .node-media {
+  order: 2;
+}
+.media-node.layout-title-media-subtitle .node-subtitle {
+  order: 3;
+}
+.media-node.layout-title-subtitle-media .node-subtitle {
+  order: 2;
+}
+.media-node.layout-title-subtitle-media .node-media {
+  order: 3;
+}
+.media-node.layout-media-title-subtitle .node-media {
+  order: 1;
+}
+.media-node.layout-media-title-subtitle .node-title {
+  order: 2;
+}
+.media-node.layout-media-title-subtitle .node-subtitle {
+  order: 3;
+}
+.node-layout-field {
+  padding: 0;
+  border: 0;
+  margin: 0 0 18px;
+}
+.node-layout-field legend {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.node-layout-options {
+  display: grid;
+  gap: 6px;
+}
+.node-layout-options button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  font-size: 10px;
+  text-align: left;
+}
+.node-layout-options button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: white;
+}

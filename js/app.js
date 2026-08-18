@@ -279,11 +279,11 @@ function renderNodes() {
     const playerInk = hasVisibleColor
       ? n.color
       : readableInk(map().appearance.textColor || map().appearance.canvasColor);
-    el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} ${hasVisibleColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
+    el.className = `mind-node item-${type} style-${style} font-${n.font || "indie"} size-${n.size || "medium"} layout-${n.layout || "media-title-subtitle"} ${hasVisibleColor ? "" : "no-color"} ${n.customWidth ? "manual-width" : ""} ${type !== "text" ? "media-node" : ""} ${n.id === selectedNodeId ? "selected" : ""}`;
     el.dataset.id = n.id;
     el.dataset.mediaSignature = mediaSignature(n);
     el.style.cssText = `left:${n.x}px;top:${n.y}px;--node-color:${nodeColor};--node-text:${nodeText};--player-ink:${playerInk};--node-font-size:${n.fontSize || 20}px;--title-align:${n.align || "center"}${n.customWidth ? `;width:${n.customWidth}px` : ""}`;
-    el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><button class="connector" aria-label="${escapeAttribute(n.title || "Başlıksız öğe")} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
+    el.innerHTML = `${renderNodeMedia(n)}<div class="node-title"></div><div class="node-subtitle"></div><button class="connector" aria-label="${escapeAttribute(n.title || "Başlıksız öğe")} öğesinden bağlantı oluştur"></button>${type === "text" ? '<button class="node-resize-handle" aria-label="Genişliği değiştir"></button>' : ""}`;
     const retained = retainedMedia.get(n.id);
     const freshMedia = el.querySelector(".node-media");
     const reusedMedia = Boolean(
@@ -293,6 +293,7 @@ function renderNodes() {
     const title = el.querySelector(".node-title");
     if (n.titleHtml) title.innerHTML = sanitizeRichText(n.titleHtml);
     else title.textContent = n.title;
+    el.querySelector(".node-subtitle").textContent = n.subtitle || "";
     el.addEventListener("pointerdown", onNodeDown);
     el.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -708,6 +709,7 @@ function renderNote() {
   $(".note-content").hidden = !n;
   if (!n) return;
   $("#note-title").value = n.title;
+  $("#note-subtitle").value = n.subtitle || "";
   $("#note-text").value = n.note || "";
   $("#note-tags").value = (n.tags || []).join(", ");
   $("#node-font").value = n.font || "indie";
@@ -717,6 +719,7 @@ function renderNote() {
   const isImage = n.type === "image";
   $("#node-width-field").hidden = !isText;
   $("#node-size-field").hidden = isText;
+  $("#node-layout-field").hidden = isText;
   $("#image-shape-field").hidden = !isImage;
   $("#website-preview-field").hidden = n.type !== "website";
   $("#website-preview").checked = n.websitePreview !== false;
@@ -739,6 +742,14 @@ function renderNote() {
       button.classList.toggle(
         "active",
         button.dataset.imageShape === (n.imageShape || "original"),
+      ),
+    );
+  }
+  if (!isText) {
+    $$("#node-layout-options button").forEach((button) =>
+      button.classList.toggle(
+        "active",
+        button.dataset.nodeLayout === (n.layout || "media-title-subtitle"),
       ),
     );
   }
@@ -1123,6 +1134,7 @@ async function createItemFromDialog() {
       type,
       style: map().appearance.itemStyles?.[type] || "soft",
       title: $("#item-title").value.trim(),
+      subtitle: $("#item-subtitle").value.trim(),
       x: position.x - (type === "text" ? 78 : 115),
       y: position.y - 31,
       color: COLORS[map().nodes.length % COLORS.length],
@@ -1335,6 +1347,7 @@ function updateNodeFromPanel() {
   const nextTitle = $("#note-title").value.trim();
   if (nextTitle !== n.title) delete n.titleHtml;
   n.title = nextTitle;
+  n.subtitle = $("#note-subtitle").value.trim();
   n.note = $("#note-text").value;
   n.tags = $("#note-tags")
     .value.split(",")
@@ -1344,6 +1357,7 @@ function updateNodeFromPanel() {
   scheduleSave();
 }
 $("#note-title").onchange = updateNodeFromPanel;
+$("#note-subtitle").onchange = updateNodeFromPanel;
 $("#note-text").onchange = updateNodeFromPanel;
 $("#note-tags").onchange = updateNodeFromPanel;
 $("#website-preview").onchange = async (event) => {
@@ -1401,6 +1415,21 @@ $$("#node-align-options button").forEach(
         return;
       snapshot();
       node.align = button.dataset.nodeAlign;
+      renderNodes();
+      renderEdges();
+      renderNote();
+      scheduleSave();
+    }),
+);
+$$("#node-layout-options button").forEach(
+  (button) =>
+    (button.onclick = () => {
+      const node = map().nodes.find((item) => item.id === selectedNodeId);
+      if (!node || node.type === "text") return;
+      if ((node.layout || "media-title-subtitle") === button.dataset.nodeLayout)
+        return;
+      snapshot();
+      node.layout = button.dataset.nodeLayout;
       renderNodes();
       renderEdges();
       renderNote();
