@@ -409,16 +409,29 @@ button {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.edge-label {
-  font:
-    15px "Indie Flower",
-    cursive;
-  fill: var(--ink);
-  paint-order: stroke;
-  stroke: var(--canvas);
-  stroke-width: 7px;
-  stroke-linejoin: round;
-  text-anchor: middle;
+.edge-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.edge-delete-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #b44f3a;
+}
+.edge-delete-button:hover {
+  background: #fff0ec;
+}
+.edge-delete-button svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
 }
 .temp-edge {
   fill: none;
@@ -1624,9 +1637,6 @@ body.sidebar-open .zoom-controls {
 }
 .canvas-hint {
   color: color-mix(in srgb, var(--canvas-ink), transparent 34%);
-}
-.edge-label {
-  fill: var(--canvas-ink);
 }
 .mind-node.style-none {
   border-color: transparent;
@@ -3084,7 +3094,7 @@ button > svg,
 
 #edge-path-style {
   grid-auto-flow: row;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   overflow: visible;
   border: 0;

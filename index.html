@@ -633,12 +633,26 @@
 
     <div id="edge-popover" class="popover edge-popover" hidden>
       <div class="popover-title">
-        <strong>Bağlantı</strong
-        ><button class="popover-close" aria-label="Kapat">×</button>
+        <strong>Bağlantı</strong>
+        <div class="edge-title-actions">
+          <button
+            id="delete-edge"
+            class="edge-delete-button"
+            aria-label="Bağlantıyı sil"
+            title="Bağlantıyı sil"
+          >
+            <svg class="bi" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+              />
+              <path
+                d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2h3.086l.707-.707A1 1 0 0 1 6 1h4a1 1 0 0 1 .707.293l.707.707H14.5zm-10.5 1v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4zM2.5 3h11V2h-11z"
+              />
+            </svg>
+          </button>
+          <button class="popover-close" aria-label="Kapat">×</button>
+        </div>
       </div>
-      <label
-        >Etiket<input id="edge-label" placeholder="örn. destekler"
-      /></label>
       <div class="edge-quick-grid">
         <fieldset>
           <legend>Yön</legend>
@@ -677,22 +691,6 @@
             <svg viewBox="0 0 64 24">
               <path d="M2 12 C8 2 14 22 20 12 S32 2 38 12 S50 22 62 12" /></svg
             ><span>Dalga</span>
-          </button>
-          <button data-path="loop">
-            <svg viewBox="0 0 64 24">
-              <path
-                d="M2 17 C15 17 20 17 27 17 C36 17 38 4 30 3 C19 2 17 17 27 17 C39 17 49 13 62 6"
-              /></svg
-            ><span>Döngü</span>
-          </button>
-          <button data-path="arc">
-            <svg viewBox="0 0 64 24"><path d="M2 20 Q32 -2 62 20" /></svg
-            ><span>Yay</span>
-          </button>
-          <button data-path="crescent">
-            <svg viewBox="0 0 64 24">
-              <path d="M2 19 C17 0 31 2 38 11 S52 20 62 5" /></svg
-            ><span>Hilal</span>
           </button>
           <button data-path="zigzag">
             <svg viewBox="0 0 64 24">
@@ -753,7 +751,6 @@
         >Çizgi kalınlığı <output id="edge-width-output">2px</output
         ><input id="edge-width" type="range" min="1" max="8" step="0.5"
       /></label>
-      <button id="delete-edge" class="danger-button">Bağlantıyı sil</button>
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>

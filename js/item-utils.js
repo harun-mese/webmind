@@ -167,44 +167,6 @@ export function buildEdgePath(source, target, style = "curved") {
     const finalLead = Math.min(28, pathDistance * 0.12);
     return `${path} L${round(x2 - unitX * finalLead)},${round(y2 - unitY * finalLead)} L${x2},${y2}`;
   }
-  if (style === "arc" || style === "crescent") {
-    const amplitude = Math.min(105, Math.max(42, pathDistance * 0.3));
-    const handle = Math.min(54, pathDistance * 0.2);
-    if (style === "arc") {
-      const control1X = round(
-        x1 + unitX * pathDistance * 0.28 + normalX * amplitude,
-      );
-      const control1Y = round(
-        y1 + unitY * pathDistance * 0.28 + normalY * amplitude,
-      );
-      const control2X = round(x2 - unitX * handle);
-      const control2Y = round(y2 - unitY * handle);
-      return `M${x1},${y1} C${control1X},${control1Y} ${control2X},${control2Y} ${x2},${y2}`;
-    }
-    const firstX = round(x1 + (x2 - x1) * 0.36 + normalX * amplitude);
-    const firstY = round(y1 + (y2 - y1) * 0.36 + normalY * amplitude);
-    const secondX = round(x1 + (x2 - x1) * 0.7 + normalX * amplitude * 0.24);
-    const secondY = round(y1 + (y2 - y1) * 0.7 + normalY * amplitude * 0.24);
-    return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${round(firstX - unitX * handle)},${round(firstY - unitY * handle)} ${firstX},${firstY} C${round(firstX + unitX * handle)},${round(firstY + unitY * handle)} ${round(secondX - unitX * handle)},${round(secondY - unitY * handle)} ${secondX},${secondY} C${round(secondX + unitX * handle)},${round(secondY + unitY * handle)} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
-  }
-  if (style === "loop") {
-    const middleX = (x1 + x2) / 2;
-    const middleY = (y1 + y2) / 2;
-    const radius = Math.min(72, Math.max(30, pathDistance * 0.2));
-    const kappa = radius * 0.5523;
-    const point = (along, normal) => ({
-      x: round(middleX + unitX * along + normalX * normal),
-      y: round(middleY + unitY * along + normalY * normal),
-    });
-    // The loop sits above the connector and touches its baseline tangentially.
-    // Leads therefore never cut across the ring, matching a hand-drawn loop.
-    const junction = point(0, 0);
-    const right = point(radius, radius);
-    const top = point(0, radius * 2);
-    const left = point(-radius, radius);
-    const coordinate = (value) => `${value.x},${value.y}`;
-    return `M${x1},${y1} C${coordinate(point(-radius, 0))} ${coordinate(point(-kappa, 0))} ${coordinate(junction)} C${coordinate(point(kappa, 0))} ${coordinate(point(radius, radius - kappa))} ${coordinate(right)} C${coordinate(point(radius, radius + kappa))} ${coordinate(point(kappa, radius * 2))} ${coordinate(top)} C${coordinate(point(-kappa, radius * 2))} ${coordinate(point(-radius, radius + kappa))} ${coordinate(left)} C${coordinate(point(-radius, radius - kappa))} ${coordinate(point(-kappa, 0))} ${coordinate(junction)} C${coordinate(point(kappa, 0))} ${round(x2 - unitX * radius)},${round(y2 - unitY * radius)} ${x2},${y2}`;
-  }
   if (horizontal) {
     const middleX = round((x1 + x2) / 2);
     const lead = Math.min(64, pathDistance * 0.32);

@@ -947,29 +947,6 @@ function renderEdges() {
       e.stopPropagation();
       selectEdge(edge.id, e.clientX, e.clientY);
     });
-    if (edge.label) {
-      const ad = a ? nodeDimensions(a) : null,
-        bd = b ? nodeDimensions(b) : null;
-      const text = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "text",
-      );
-      text.setAttribute("class", "edge-label");
-      text.setAttribute(
-        "x",
-        renderedPoints
-          ? renderedPoints[Math.floor(renderedPoints.length / 2)].x
-          : (a.x + ad.width / 2 + b.x + bd.width / 2) / 2,
-      );
-      text.setAttribute(
-        "y",
-        renderedPoints
-          ? renderedPoints[Math.floor(renderedPoints.length / 2)].y - 8
-          : (a.y + ad.height / 2 + b.y + bd.height / 2) / 2 - 8,
-      );
-      text.textContent = edge.label;
-      g.append(text);
-    }
     edgeRoot.append(g);
   });
   if (connect) {
@@ -993,7 +970,6 @@ function renderEdges() {
   }
 }
 function syncEdgePopover(edge) {
-  $("#edge-label").value = edge.label || "";
   const edgeColor = edge.color || map().appearance.arrowColor;
   $("#edge-color").value = edgeColor;
   $("#edge-width").value = edge.width || 2;
@@ -1324,7 +1300,6 @@ window.addEventListener("pointerup", (e) => {
         sourceAnchor: nodeCenter(source),
         targetAnchor: nodeCenter(target),
         points,
-        label: "",
         color: map().appearance.arrowColor,
         direction: "forward",
         lineStyle: "solid",
@@ -1374,7 +1349,6 @@ window.addEventListener("pointerup", (e) => {
         id: uid(),
         sourceId: connect.source,
         targetId: target.dataset.id,
-        label: "",
         color: map().appearance.arrowColor,
         direction: "forward",
         lineStyle: "solid",
@@ -1939,8 +1913,6 @@ function updateSelectedEdge(key, value) {
   syncEdgePopover(edge);
   scheduleSave();
 }
-$("#edge-label").onchange = (e) =>
-  updateSelectedEdge("label", e.target.value.trim());
 $("#edge-color").onchange = (e) => updateSelectedEdge("color", e.target.value);
 $$("#edge-color-presets button").forEach((button) => {
   button.onclick = () => updateSelectedEdge("color", button.dataset.color);

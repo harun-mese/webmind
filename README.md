@@ -36,7 +36,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
 - Minimal bağlantı panelinde sekiz hazır ok rengi ve özel renk seçici
 - Itemlerin üzerinden serbestçe geçebilen bağlantılar
-- Canlı SVG önizlemeli; düzeltilmiş dalga ve döngü ile yay, hilal ve zikzak arrow yolları
+- Canlı SVG önizlemeli kavis, doğru, dirsek, dalga ve zikzak ok yolları
 - Rich text için sarı, mavi, yeşil ve pembe mark renkleri
 - Noktalı, kareli, çizgili veya boş canvas deseni ve özelleştirilebilir renkler
 - Her öğe için yumuşak kart, yapışkan not, çizgisel veya cam görünüm stili
