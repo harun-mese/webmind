@@ -4,6 +4,7 @@ import {
   buildFreehandPath,
   formatBytes,
   nodeDimensions,
+  nodeBoundaryPoint,
   normalizeWebUrl,
   parseMapLocation,
   readableInk,
@@ -873,8 +874,18 @@ function nodeCenter(node) {
   return { x: node.x + size.width / 2, y: node.y + size.height / 2 };
 }
 function anchoredFreehandPoints(edge, source, target) {
-  if (!source || !target || !edge.sourceAnchor || !edge.targetAnchor)
-    return edge.points;
+  if (!source || !target) return edge.points.map((point) => ({ ...point }));
+  if (!edge.sourceAnchor || !edge.targetAnchor) {
+    const points = edge.points.map((point) => ({ ...point }));
+    if (points.length > 1) {
+      points[0] = nodeBoundaryPoint(source, points[1]);
+      points[points.length - 1] = nodeBoundaryPoint(
+        target,
+        points[points.length - 2],
+      );
+    }
+    return points;
+  }
   const sourceNow = nodeCenter(source);
   const targetNow = nodeCenter(target);
   const sourceDelta = {
@@ -886,13 +897,21 @@ function anchoredFreehandPoints(edge, source, target) {
     y: targetNow.y - edge.targetAnchor.y,
   };
   const lastIndex = Math.max(1, edge.points.length - 1);
-  return edge.points.map((point, index) => {
+  const points = edge.points.map((point, index) => {
     const progress = index / lastIndex;
     return {
       x: point.x + sourceDelta.x * (1 - progress) + targetDelta.x * progress,
       y: point.y + sourceDelta.y * (1 - progress) + targetDelta.y * progress,
     };
   });
+  if (points.length > 1) {
+    points[0] = nodeBoundaryPoint(source, points[1]);
+    points[points.length - 1] = nodeBoundaryPoint(
+      target,
+      points[points.length - 2],
+    );
+  }
+  return points;
 }
 function renderEdges() {
   if (edgeFrame) {
@@ -1293,11 +1312,11 @@ window.addEventListener("pointerup", (e) => {
       points.length > 2 &&
       Math.hypot(end.x - start.x, end.y - start.y) > 14
     ) {
-      const straight = buildEdgePath(source, target, "straight")
-        .match(/-?\d+(?:\.\d+)?/g)
-        .map(Number);
-      points[0] = { x: straight[0], y: straight[1] };
-      points[points.length - 1] = { x: straight[2], y: straight[3] };
+      points[0] = nodeBoundaryPoint(source, points[1]);
+      points[points.length - 1] = nodeBoundaryPoint(
+        target,
+        points[points.length - 2],
+      );
       map().edges.push({
         id: uid(),
         sourceId: source.id,

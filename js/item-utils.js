@@ -22,6 +22,27 @@ export function nodeDimensions(node) {
   return { width: 156, height: 62 };
 }
 
+export function nodeBoundaryPoint(node, toward, gap = 12) {
+  const size = nodeDimensions(node);
+  const center = {
+    x: node.x + size.width / 2,
+    y: node.y + size.height / 2,
+  };
+  const dx = toward.x - center.x;
+  const dy = toward.y - center.y;
+  const distance = Math.max(1, Math.hypot(dx, dy));
+  const unitX = dx / distance;
+  const unitY = dy / distance;
+  const edgeDistance = Math.min(
+    Math.abs(unitX) > 0.0001 ? size.width / 2 / Math.abs(unitX) : Infinity,
+    Math.abs(unitY) > 0.0001 ? size.height / 2 / Math.abs(unitY) : Infinity,
+  );
+  return {
+    x: Math.round((center.x + unitX * (edgeDistance + gap)) * 100) / 100,
+    y: Math.round((center.y + unitY * (edgeDistance + gap)) * 100) / 100,
+  };
+}
+
 export function normalizeWebUrl(value) {
   try {
     const url = new URL(value);

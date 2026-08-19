@@ -5,6 +5,7 @@ import {
   buildFreehandPath,
   formatBytes,
   nodeDimensions,
+  nodeBoundaryPoint,
   normalizeWebUrl,
   parseMapLocation,
   readableInk,
@@ -165,6 +166,18 @@ test("freehand points become a smooth editable SVG path", () => {
     ]),
     "M0,0 Q20,15 30,10 Q40,5 50,12.5 L60,20",
   );
+});
+
+test("drawn arrows attach to the approached side of each item", () => {
+  const node = { type: "text", x: 100, y: 100 };
+  assert.deepEqual(nodeBoundaryPoint(node, { x: 400, y: 131 }), {
+    x: 268,
+    y: 131,
+  });
+  assert.deepEqual(nodeBoundaryPoint(node, { x: 178, y: 400 }), {
+    x: 178,
+    y: 174,
+  });
 });
 
 test("toolbar ink remains readable against light and dark canvases", () => {
