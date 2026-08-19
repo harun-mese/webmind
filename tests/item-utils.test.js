@@ -4,6 +4,7 @@ import {
   buildEdgePath,
   buildFreehandPath,
   formatBytes,
+  freehandEndpointGuides,
   nodeDimensions,
   nodeBoundaryPoint,
   normalizeWebUrl,
@@ -170,6 +171,21 @@ test("drawn arrows attach to the approached side of each item", () => {
   assert.deepEqual(nodeBoundaryPoint(node, { x: 178, y: 400 }), {
     x: 178,
     y: 174,
+  });
+});
+
+test("drawn arrow endpoint guides ignore noisy points beside items", () => {
+  const points = [
+    { x: 0, y: 0 },
+    { x: 2, y: 1 },
+    { x: 8, y: 4 },
+    { x: 45, y: 30 },
+    { x: 92, y: 48 },
+    { x: 100, y: 50 },
+  ];
+  assert.deepEqual(freehandEndpointGuides(points), {
+    start: points[3],
+    end: points[3],
   });
 });
 

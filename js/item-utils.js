@@ -91,6 +91,26 @@ export function buildFreehandPath(points = []) {
   return `${path} L${round(last.x)},${round(last.y)}`;
 }
 
+export function freehandEndpointGuides(points = [], distance = 32) {
+  if (points.length < 2) return { start: null, end: null };
+  const first = points[0];
+  const last = points.at(-1);
+  const start =
+    points.find(
+      (point, index) =>
+        index > 0 &&
+        Math.hypot(point.x - first.x, point.y - first.y) >= distance,
+    ) || points[Math.min(1, points.length - 1)];
+  const end =
+    points
+      .slice(0, -1)
+      .reverse()
+      .find(
+        (point) => Math.hypot(point.x - last.x, point.y - last.y) >= distance,
+      ) || points[Math.max(0, points.length - 2)];
+  return { start, end };
+}
+
 export function buildEdgePath(source, target, style = "curved") {
   const sourceSize = nodeDimensions(source);
   const targetSize = nodeDimensions(target);

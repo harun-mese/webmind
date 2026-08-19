@@ -3,6 +3,7 @@ import {
   buildEdgePath,
   buildFreehandPath,
   formatBytes,
+  freehandEndpointGuides,
   nodeDimensions,
   nodeBoundaryPoint,
   normalizeWebUrl,
@@ -878,11 +879,11 @@ function anchoredFreehandPoints(edge, source, target) {
   if (!edge.sourceAnchor || !edge.targetAnchor) {
     const points = edge.points.map((point) => ({ ...point }));
     if (points.length > 1) {
-      points[0] = nodeBoundaryPoint(source, points[1]);
-      points[points.length - 1] = nodeBoundaryPoint(
-        target,
-        points[points.length - 2],
-      );
+      const guides = freehandEndpointGuides(points);
+      points[0] = nodeBoundaryPoint(source, guides.start);
+      points[1] = { ...guides.start };
+      points[points.length - 2] = { ...guides.end };
+      points[points.length - 1] = nodeBoundaryPoint(target, guides.end);
     }
     return points;
   }
@@ -905,11 +906,11 @@ function anchoredFreehandPoints(edge, source, target) {
     };
   });
   if (points.length > 1) {
-    points[0] = nodeBoundaryPoint(source, points[1]);
-    points[points.length - 1] = nodeBoundaryPoint(
-      target,
-      points[points.length - 2],
-    );
+    const guides = freehandEndpointGuides(points);
+    points[0] = nodeBoundaryPoint(source, guides.start);
+    points[1] = { ...guides.start };
+    points[points.length - 2] = { ...guides.end };
+    points[points.length - 1] = nodeBoundaryPoint(target, guides.end);
   }
   return points;
 }
@@ -972,8 +973,12 @@ function renderEdges() {
 function syncEdgePopover(edge) {
   const edgeColor = edge.color || map().appearance.arrowColor;
   $("#edge-color").value = edgeColor;
-  $("#edge-width").value = edge.width || 2;
-  $("#edge-width-output").value = `${edge.width || 2}px`;
+  $$("#edge-width-presets button").forEach((button) =>
+    button.classList.toggle(
+      "active",
+      Number(button.dataset.width) === Number(edge.width || 2),
+    ),
+  );
   $$("#edge-color-presets button").forEach((button) =>
     button.classList.toggle(
       "active",
@@ -1288,11 +1293,11 @@ window.addEventListener("pointerup", (e) => {
       points.length > 2 &&
       Math.hypot(end.x - start.x, end.y - start.y) > 14
     ) {
-      points[0] = nodeBoundaryPoint(source, points[1]);
-      points[points.length - 1] = nodeBoundaryPoint(
-        target,
-        points[points.length - 2],
-      );
+      const guides = freehandEndpointGuides(points);
+      points[0] = nodeBoundaryPoint(source, guides.start);
+      points[1] = { ...guides.start };
+      points[points.length - 2] = { ...guides.end };
+      points[points.length - 1] = nodeBoundaryPoint(target, guides.end);
       map().edges.push({
         id: uid(),
         sourceId: source.id,
@@ -1917,15 +1922,10 @@ $("#edge-color").onchange = (e) => updateSelectedEdge("color", e.target.value);
 $$("#edge-color-presets button").forEach((button) => {
   button.onclick = () => updateSelectedEdge("color", button.dataset.color);
 });
-$("#edge-width").onpointerdown = () => snapshot();
-$("#edge-width").oninput = (event) => {
-  const edge = map().edges.find((item) => item.id === selectedEdgeId);
-  if (!edge) return;
-  edge.width = Number(event.target.value);
-  $("#edge-width-output").value = `${edge.width}px`;
-  renderEdges();
-  scheduleSave();
-};
+$$("#edge-width-presets button").forEach((button) => {
+  button.onclick = () =>
+    updateSelectedEdge("width", Number(button.dataset.width));
+});
 $$("#edge-direction button").forEach(
   (b) =>
     (b.onclick = () => updateSelectedEdge("direction", b.dataset.direction)),

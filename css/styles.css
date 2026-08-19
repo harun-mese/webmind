@@ -682,6 +682,21 @@ button {
 .edge-custom-color span {
   text-shadow: 0 1px 3px #000;
 }
+.edge-width-field {
+  margin-bottom: 0 !important;
+}
+.edge-width-presets button {
+  display: grid;
+  min-height: 31px;
+  place-items: center;
+}
+.edge-width-presets i {
+  display: block;
+  width: 24px;
+  height: var(--line-width);
+  border-radius: 999px;
+  background: currentColor;
+}
 .popover-title {
   padding: 0 0 12px;
 }

@@ -33,7 +33,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
 - Bağlantı noktasındaki iki butondan otomatik ya da fare/kalem/dokunmayla çizilen bağlantı seçimi
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
-- Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
+- Item yaklaşım yönüne göre sabitlenen ok uçları ve beş hazır bağlantı kalınlığı
 - Minimal bağlantı panelinde sekiz hazır ok rengi ve özel renk seçici
 - Itemlerin üzerinden serbestçe geçebilen bağlantılar
 - Canlı SVG önizlemeli kavis, doğru, dirsek, dalga ve zikzak ok yolları
