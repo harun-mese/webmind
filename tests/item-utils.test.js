@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  attachFreehandEndpoints,
   buildEdgePath,
   buildFreehandPath,
   formatBytes,
@@ -187,6 +188,21 @@ test("drawn arrow endpoint guides ignore noisy points beside items", () => {
     start: points[3],
     end: points[3],
   });
+});
+
+test("drawn arrow keeps a stable target-side segment", () => {
+  const source = { type: "text", x: 0, y: 0 };
+  const target = { type: "text", x: 300, y: 100 };
+  const points = [
+    { x: 90, y: 30 },
+    { x: 130, y: 15 },
+    { x: 240, y: 80 },
+    { x: 290, y: 120 },
+  ];
+  const first = attachFreehandEndpoints(points, source, target);
+  const second = attachFreehandEndpoints(first, source, target);
+  assert.deepEqual(second, first);
+  assert.deepEqual(first.at(-1), nodeBoundaryPoint(target, first.at(-2)));
 });
 
 test("toolbar ink remains readable against light and dark canvases", () => {

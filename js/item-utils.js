@@ -111,6 +111,27 @@ export function freehandEndpointGuides(points = [], distance = 32) {
   return { start, end };
 }
 
+export function attachFreehandEndpoints(
+  points,
+  source,
+  target,
+  detectGuides = false,
+) {
+  const attached = points.map((point) => ({ ...point }));
+  if (attached.length < 2) return attached;
+  if (detectGuides) {
+    const guides = freehandEndpointGuides(attached);
+    attached[1] = { ...guides.start };
+    attached[attached.length - 2] = { ...guides.end };
+  }
+  attached[0] = nodeBoundaryPoint(source, attached[1]);
+  attached[attached.length - 1] = nodeBoundaryPoint(
+    target,
+    attached[attached.length - 2],
+  );
+  return attached;
+}
+
 export function buildEdgePath(source, target, style = "curved") {
   const sourceSize = nodeDimensions(source);
   const targetSize = nodeDimensions(target);

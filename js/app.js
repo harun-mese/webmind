@@ -1,11 +1,11 @@
 import { loadWorkspace, saveWorkspace } from "./database.js";
 import {
+  attachFreehandEndpoints,
   buildEdgePath,
   buildFreehandPath,
   formatBytes,
   freehandEndpointGuides,
   nodeDimensions,
-  nodeBoundaryPoint,
   normalizeWebUrl,
   parseMapLocation,
   readableInk,
@@ -881,15 +881,7 @@ function nodeCenter(node) {
 function anchoredFreehandPoints(edge, source, target) {
   if (!source || !target) return edge.points.map((point) => ({ ...point }));
   if (!edge.sourceAnchor || !edge.targetAnchor) {
-    const points = edge.points.map((point) => ({ ...point }));
-    if (points.length > 1) {
-      const guides = freehandEndpointGuides(points);
-      points[0] = nodeBoundaryPoint(source, guides.start);
-      points[1] = { ...guides.start };
-      points[points.length - 2] = { ...guides.end };
-      points[points.length - 1] = nodeBoundaryPoint(target, guides.end);
-    }
-    return points;
+    return attachFreehandEndpoints(edge.points, source, target, true);
   }
   const sourceNow = nodeCenter(source);
   const targetNow = nodeCenter(target);
@@ -909,14 +901,9 @@ function anchoredFreehandPoints(edge, source, target) {
       y: point.y + sourceDelta.y * (1 - progress) + targetDelta.y * progress,
     };
   });
-  if (points.length > 1) {
-    const guides = freehandEndpointGuides(points);
-    points[0] = nodeBoundaryPoint(source, guides.start);
-    points[1] = { ...guides.start };
-    points[points.length - 2] = { ...guides.end };
-    points[points.length - 1] = nodeBoundaryPoint(target, guides.end);
-  }
-  return points;
+  // The saved second and penultimate points are stable approach guides.
+  // Re-detecting them from the already-clipped path made the target end jump.
+  return attachFreehandEndpoints(points, source, target);
 }
 function renderEdges() {
   if (edgeFrame) {
@@ -1298,17 +1285,17 @@ window.addEventListener("pointerup", (e) => {
       Math.hypot(end.x - start.x, end.y - start.y) > 14
     ) {
       const guides = freehandEndpointGuides(points);
-      points[0] = nodeBoundaryPoint(source, guides.start);
       points[1] = { ...guides.start };
       points[points.length - 2] = { ...guides.end };
-      points[points.length - 1] = nodeBoundaryPoint(target, guides.end);
+      const attachedPoints = attachFreehandEndpoints(points, source, target);
       map().edges.push({
         id: uid(),
         sourceId: source.id,
         targetId: target.id,
         sourceAnchor: nodeCenter(source),
         targetAnchor: nodeCenter(target),
-        points,
+        endpointGuides: true,
+        points: attachedPoints,
         color: map().appearance.arrowColor,
         direction: "forward",
         lineStyle: "solid",

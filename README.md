@@ -35,6 +35,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Bağlantı noktasındaki iki butondan otomatik ya da fare/kalem/dokunmayla çizilen bağlantı seçimi
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
 - Item yaklaşım yönüne göre sabitlenen ok uçları ve beş hazır bağlantı kalınlığı
+- Çizilen bağlantılarda item hareket ederken yön değiştirmeyen kararlı hedef ucu
 - Minimal bağlantı panelinde sekiz hazır ok rengi ve özel renk seçici
 - Itemlerin üzerinden serbestçe geçebilen bağlantılar
 - Canlı SVG önizlemeli kavis, doğru, dirsek, dalga ve zikzak ok yolları
