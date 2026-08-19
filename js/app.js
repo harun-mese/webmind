@@ -1,6 +1,7 @@
 import { loadWorkspace, saveWorkspace } from "./database.js";
 import {
   buildEdgePath,
+  buildFreehandPath,
   formatBytes,
   nodeDimensions,
   normalizeWebUrl,
@@ -116,6 +117,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   saveTimer,
   drag = null,
   connect = null,
+  freehandDrawing = null,
+  freehandMode = false,
   pan = null,
   resize = null,
   pendingItemPosition = null,
@@ -834,14 +837,16 @@ function renderEdges() {
   map().edges.forEach((edge) => {
     const a = map().nodes.find((n) => n.id === edge.sourceId),
       b = map().nodes.find((n) => n.id === edge.targetId);
-    if (!a || !b) return;
+    if (!edge.points?.length && (!a || !b)) return;
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute(
       "class",
       `edge-group ${edge.id === selectedEdgeId ? "selected" : ""}`,
     );
     g.dataset.id = edge.id;
-    const p = buildEdgePath(a, b, edge.pathStyle);
+    const p = edge.points?.length
+      ? buildFreehandPath(edge.points)
+      : buildEdgePath(a, b, edge.pathStyle);
     const dash =
       edge.lineStyle === "dashed"
         ? "9 7"
@@ -854,17 +859,24 @@ function renderEdges() {
       selectEdge(edge.id, e.clientX, e.clientY);
     });
     if (edge.label) {
-      const ad = nodeDimensions(a),
-        bd = nodeDimensions(b);
+      const ad = a ? nodeDimensions(a) : null,
+        bd = b ? nodeDimensions(b) : null;
       const text = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "text",
       );
       text.setAttribute("class", "edge-label");
-      text.setAttribute("x", (a.x + ad.width / 2 + b.x + bd.width / 2) / 2);
+      text.setAttribute(
+        "x",
+        edge.points?.length
+          ? edge.points[Math.floor(edge.points.length / 2)].x
+          : (a.x + ad.width / 2 + b.x + bd.width / 2) / 2,
+      );
       text.setAttribute(
         "y",
-        (a.y + ad.height / 2 + b.y + bd.height / 2) / 2 - 8,
+        edge.points?.length
+          ? edge.points[Math.floor(edge.points.length / 2)].y - 8
+          : (a.y + ad.height / 2 + b.y + bd.height / 2) / 2 - 8,
       );
       text.textContent = edge.label;
       g.append(text);
@@ -881,6 +893,13 @@ function renderEdges() {
       "d",
       `M${s.x + dimensions.width},${s.y + dimensions.height / 2} L${p.x},${p.y}`,
     );
+    edgeRoot.append(temp);
+  }
+  if (freehandDrawing?.points.length > 1) {
+    const temp = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    temp.setAttribute("class", "temp-edge freehand-preview");
+    temp.setAttribute("d", buildFreehandPath(freehandDrawing.points));
+    temp.setAttribute("marker-end", "url(#arrow-end)");
     edgeRoot.append(temp);
   }
 }
@@ -1065,6 +1084,18 @@ canvas.addEventListener("dblclick", (e) => {
   }, 0);
 });
 canvas.addEventListener("pointerdown", (e) => {
+  if (e.target !== canvas && e.target !== nodeLayer) return;
+  if (freehandMode) {
+    e.preventDefault();
+    snapshot();
+    freehandDrawing = {
+      pointerId: e.pointerId,
+      points: [screenToWorld(e.clientX, e.clientY)],
+    };
+    canvas.setPointerCapture(e.pointerId);
+    renderEdges();
+    return;
+  }
   if (e.target !== canvas) return;
   if (e.pointerType === "touch") {
     touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -1098,6 +1129,15 @@ canvas.addEventListener("pointerdown", (e) => {
   canvas.setPointerCapture(e.pointerId);
 });
 window.addEventListener("pointermove", (e) => {
+  if (freehandDrawing?.pointerId === e.pointerId) {
+    const point = screenToWorld(e.clientX, e.clientY);
+    const previous = freehandDrawing.points.at(-1);
+    if (Math.hypot(point.x - previous.x, point.y - previous.y) >= 2) {
+      freehandDrawing.points.push(point);
+      scheduleEdgeRender();
+    }
+    return;
+  }
   if (e.pointerType === "touch" && touchPoints.has(e.pointerId)) {
     touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pinch && touchPoints.size >= 2) {
@@ -1162,6 +1202,32 @@ window.addEventListener("pointermove", (e) => {
   }
 });
 window.addEventListener("pointerup", (e) => {
+  if (freehandDrawing?.pointerId === e.pointerId) {
+    const points = freehandDrawing.points;
+    const start = points[0];
+    const end = points.at(-1);
+    if (
+      points.length > 2 &&
+      Math.hypot(end.x - start.x, end.y - start.y) > 14
+    ) {
+      map().edges.push({
+        id: uid(),
+        points,
+        label: "",
+        color: map().appearance.arrowColor,
+        direction: "forward",
+        lineStyle: "solid",
+        pathStyle: "freehand",
+        width: 2,
+      });
+      scheduleSave();
+    } else {
+      history.pop();
+    }
+    freehandDrawing = null;
+    renderEdges();
+    return;
+  }
   if (e.pointerType === "touch") {
     touchPoints.delete(e.pointerId);
     if (touchPoints.size < 2 && pinch) {
@@ -1215,11 +1281,25 @@ window.addEventListener("pointerup", (e) => {
   }
 });
 window.addEventListener("pointercancel", (event) => {
+  if (freehandDrawing?.pointerId === event.pointerId) {
+    history.pop();
+    freehandDrawing = null;
+    renderEdges();
+  }
   if (event.pointerType !== "touch") return;
   touchPoints.delete(event.pointerId);
   if (touchPoints.size < 2) pinch = null;
   pan = null;
 });
+$("#draw-arrow-btn").onclick = () => {
+  freehandMode = !freehandMode;
+  canvas.classList.toggle("freehand-mode", freehandMode);
+  $("#draw-arrow-btn").classList.toggle("active", freehandMode);
+  $("#draw-arrow-btn").setAttribute("aria-pressed", String(freehandMode));
+  showToast(
+    freehandMode ? "Tuvalde basılı tutup okunu çiz" : "Serbest ok kapatıldı",
+  );
+};
 canvas.addEventListener(
   "wheel",
   (e) => {

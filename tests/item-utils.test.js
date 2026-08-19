@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   buildEdgePath,
+  buildFreehandPath,
   formatBytes,
   nodeDimensions,
   normalizeWebUrl,
@@ -151,6 +152,19 @@ test("decorative edge paths keep directional endpoints", () => {
     const tangentY = values.at(-1) - values.at(-3);
     assert.ok(Math.abs(tangentX * 120 - tangentY * 360) < 2);
   }
+});
+
+test("freehand points become a smooth editable SVG path", () => {
+  assert.equal(buildFreehandPath([]), "");
+  assert.equal(
+    buildFreehandPath([
+      { x: 0, y: 0 },
+      { x: 20, y: 15 },
+      { x: 40, y: 5 },
+      { x: 60, y: 20 },
+    ]),
+    "M0,0 Q20,15 30,10 Q40,5 50,12.5 L60,20",
+  );
 });
 
 test("toolbar ink remains readable against light and dark canvases", () => {

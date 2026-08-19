@@ -31,6 +31,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Metne göre büyüyen, maksimum genişliği sınırlı metin kartları ve başlık hizalama
 - Metin kartlarında sürüklenebilir genişlik tutamacı; medya kartlarında small, medium ve large boyutları
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
+- Hazır düğüm bağlantısına ek olarak fare, kalem veya dokunmayla serbest ok çizme modu
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
 - Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
 - Itemlerin üzerinden serbestçe geçebilen bağlantılar
@@ -67,6 +68,7 @@ Ardından `http://localhost:4173` adresini açın.
 - Bir fikre **çift tıklayın**: başlığı düzenle
 - Bir fikri **sürükleyin**: konumunu değiştir
 - Fikrin sağındaki küçük noktayı başka bir fikre **sürükleyin**: bağlantı oluştur
+- Üstteki **elle ok çiz** aracını açıp canvas üzerinde basılı tutarak serbest ok çizin
 - Bir bağlantıya **tıklayın**: yön, form, çizgi, renk ve etiket ayarları
 - Boş alanı **sürükleyin**: canvas'ı hareket ettir
 - Fare tekerleği: yakınlaştır/uzaklaştır

@@ -42,6 +42,34 @@ export function parseMapLocation(value) {
   return { lat, lng };
 }
 
+export function buildFreehandPath(points = []) {
+  const clean = points.filter(
+    (point) => Number.isFinite(point?.x) && Number.isFinite(point?.y),
+  );
+  if (clean.length < 2) return "";
+  const round = (value) => Math.round(value * 100) / 100;
+  const kept = [clean[0]];
+  for (let index = 1; index < clean.length - 1; index += 1) {
+    const previous = kept.at(-1);
+    const point = clean[index];
+    if (Math.hypot(point.x - previous.x, point.y - previous.y) >= 3) {
+      kept.push(point);
+    }
+  }
+  kept.push(clean.at(-1));
+  if (kept.length === 2) {
+    return `M${round(kept[0].x)},${round(kept[0].y)} L${round(kept[1].x)},${round(kept[1].y)}`;
+  }
+  let path = `M${round(kept[0].x)},${round(kept[0].y)}`;
+  for (let index = 1; index < kept.length - 1; index += 1) {
+    const point = kept[index];
+    const next = kept[index + 1];
+    path += ` Q${round(point.x)},${round(point.y)} ${round((point.x + next.x) / 2)},${round((point.y + next.y) / 2)}`;
+  }
+  const last = kept.at(-1);
+  return `${path} L${round(last.x)},${round(last.y)}`;
+}
+
 export function buildEdgePath(source, target, style = "curved") {
   const sourceSize = nodeDimensions(source);
   const targetSize = nodeDimensions(target);
