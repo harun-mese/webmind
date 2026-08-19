@@ -118,7 +118,8 @@ let state = { version: 1, activeMapId: null, maps: [] },
   drag = null,
   connect = null,
   freehandDrawing = null,
-  freehandMode = false,
+  connectionMode = "auto",
+  suppressConnectorClick = false,
   pan = null,
   resize = null,
   pendingItemPosition = null,
@@ -314,6 +315,14 @@ function renderNodes() {
           if (node) startConnection(event, node);
         },
       );
+      el.querySelector(".connector").addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (suppressConnectorClick) {
+          suppressConnectorClick = false;
+          return;
+        }
+        openConnectionModeMenu(el.dataset.id, event.currentTarget);
+      });
       el.querySelector(".node-more").addEventListener(
         "pointerdown",
         (event) => {
@@ -785,6 +794,20 @@ function openItemContextMenu(id, anchor) {
   menu.style.top = `${Math.max(12, Math.min(rect.bottom + 8, innerHeight - 300))}px`;
   menu.hidden = false;
 }
+function openConnectionModeMenu(id, anchor) {
+  const menu = $("#connection-mode-menu");
+  const rect = anchor.getBoundingClientRect();
+  menu.dataset.sourceId = id;
+  menu.style.left = `${Math.max(12, Math.min(rect.left - 48, innerWidth - 180))}px`;
+  menu.style.top = `${Math.max(12, Math.min(rect.bottom + 10, innerHeight - 80))}px`;
+  $$("[data-connection-mode]", menu).forEach((button) =>
+    button.classList.toggle(
+      "active",
+      button.dataset.connectionMode === connectionMode,
+    ),
+  );
+  menu.hidden = false;
+}
 function onNodeDown(e) {
   if (
     e.target.classList.contains("connector") ||
@@ -823,9 +846,53 @@ function startConnection(e, n) {
   e.stopPropagation();
   e.preventDefault();
   snapshot();
-  connect = { source: n.id, x: e.clientX, y: e.clientY };
+  if (connectionMode === "draw") {
+    freehandDrawing = {
+      pointerId: e.pointerId,
+      source: n.id,
+      points: [screenToWorld(e.clientX, e.clientY)],
+      moved: false,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    renderEdges();
+    return;
+  }
+  connect = {
+    source: n.id,
+    x: e.clientX,
+    y: e.clientY,
+    startX: e.clientX,
+    startY: e.clientY,
+    moved: false,
+  };
   e.currentTarget.setPointerCapture(e.pointerId);
   renderEdges();
+}
+function nodeCenter(node) {
+  const size = nodeDimensions(node);
+  return { x: node.x + size.width / 2, y: node.y + size.height / 2 };
+}
+function anchoredFreehandPoints(edge, source, target) {
+  if (!source || !target || !edge.sourceAnchor || !edge.targetAnchor)
+    return edge.points;
+  const sourceNow = nodeCenter(source);
+  const targetNow = nodeCenter(target);
+  const sourceDelta = {
+    x: sourceNow.x - edge.sourceAnchor.x,
+    y: sourceNow.y - edge.sourceAnchor.y,
+  };
+  const targetDelta = {
+    x: targetNow.x - edge.targetAnchor.x,
+    y: targetNow.y - edge.targetAnchor.y,
+  };
+  const lastIndex = Math.max(1, edge.points.length - 1);
+  return edge.points.map((point, index) => {
+    const progress = index / lastIndex;
+    return {
+      x: point.x + sourceDelta.x * (1 - progress) + targetDelta.x * progress,
+      y: point.y + sourceDelta.y * (1 - progress) + targetDelta.y * progress,
+    };
+  });
 }
 function renderEdges() {
   if (edgeFrame) {
@@ -844,8 +911,11 @@ function renderEdges() {
       `edge-group ${edge.id === selectedEdgeId ? "selected" : ""}`,
     );
     g.dataset.id = edge.id;
-    const p = edge.points?.length
-      ? buildFreehandPath(edge.points)
+    const renderedPoints = edge.points?.length
+      ? anchoredFreehandPoints(edge, a, b)
+      : null;
+    const p = renderedPoints
+      ? buildFreehandPath(renderedPoints)
       : buildEdgePath(a, b, edge.pathStyle);
     const dash =
       edge.lineStyle === "dashed"
@@ -868,14 +938,14 @@ function renderEdges() {
       text.setAttribute("class", "edge-label");
       text.setAttribute(
         "x",
-        edge.points?.length
-          ? edge.points[Math.floor(edge.points.length / 2)].x
+        renderedPoints
+          ? renderedPoints[Math.floor(renderedPoints.length / 2)].x
           : (a.x + ad.width / 2 + b.x + bd.width / 2) / 2,
       );
       text.setAttribute(
         "y",
-        edge.points?.length
-          ? edge.points[Math.floor(edge.points.length / 2)].y - 8
+        renderedPoints
+          ? renderedPoints[Math.floor(renderedPoints.length / 2)].y - 8
           : (a.y + ad.height / 2 + b.y + bd.height / 2) / 2 - 8,
       );
       text.textContent = edge.label;
@@ -1085,17 +1155,6 @@ canvas.addEventListener("dblclick", (e) => {
 });
 canvas.addEventListener("pointerdown", (e) => {
   if (e.target !== canvas && e.target !== nodeLayer) return;
-  if (freehandMode) {
-    e.preventDefault();
-    snapshot();
-    freehandDrawing = {
-      pointerId: e.pointerId,
-      points: [screenToWorld(e.clientX, e.clientY)],
-    };
-    canvas.setPointerCapture(e.pointerId);
-    renderEdges();
-    return;
-  }
   if (e.target !== canvas) return;
   if (e.pointerType === "touch") {
     touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -1134,6 +1193,8 @@ window.addEventListener("pointermove", (e) => {
     const previous = freehandDrawing.points.at(-1);
     if (Math.hypot(point.x - previous.x, point.y - previous.y) >= 2) {
       freehandDrawing.points.push(point);
+      freehandDrawing.moved = true;
+      suppressConnectorClick = true;
       scheduleEdgeRender();
     }
     return;
@@ -1193,6 +1254,9 @@ window.addEventListener("pointermove", (e) => {
   if (connect) {
     connect.x = e.clientX;
     connect.y = e.clientY;
+    connect.moved ||=
+      Math.hypot(e.clientX - connect.startX, e.clientY - connect.startY) > 4;
+    suppressConnectorClick ||= connect.moved;
     scheduleEdgeRender();
   }
   if (pan) {
@@ -1206,12 +1270,33 @@ window.addEventListener("pointerup", (e) => {
     const points = freehandDrawing.points;
     const start = points[0];
     const end = points.at(-1);
+    const targetElement = document
+      .elementFromPoint(e.clientX, e.clientY)
+      ?.closest(".mind-node");
+    const source = map().nodes.find(
+      (node) => node.id === freehandDrawing.source,
+    );
+    const target = map().nodes.find(
+      (node) => node.id === targetElement?.dataset.id,
+    );
     if (
+      source &&
+      target &&
+      target.id !== source.id &&
       points.length > 2 &&
       Math.hypot(end.x - start.x, end.y - start.y) > 14
     ) {
+      const straight = buildEdgePath(source, target, "straight")
+        .match(/-?\d+(?:\.\d+)?/g)
+        .map(Number);
+      points[0] = { x: straight[0], y: straight[1] };
+      points[points.length - 1] = { x: straight[2], y: straight[3] };
       map().edges.push({
         id: uid(),
+        sourceId: source.id,
+        targetId: target.id,
+        sourceAnchor: nodeCenter(source),
+        targetAnchor: nodeCenter(target),
         points,
         label: "",
         color: map().appearance.arrowColor,
@@ -1291,15 +1376,6 @@ window.addEventListener("pointercancel", (event) => {
   if (touchPoints.size < 2) pinch = null;
   pan = null;
 });
-$("#draw-arrow-btn").onclick = () => {
-  freehandMode = !freehandMode;
-  canvas.classList.toggle("freehand-mode", freehandMode);
-  $("#draw-arrow-btn").classList.toggle("active", freehandMode);
-  $("#draw-arrow-btn").setAttribute("aria-pressed", String(freehandMode));
-  showToast(
-    freehandMode ? "Tuvalde basılı tutup okunu çiz" : "Serbest ok kapatıldı",
-  );
-};
 canvas.addEventListener(
   "wheel",
   (e) => {
@@ -1784,14 +1860,26 @@ function closeFloatingPanels(event) {
   if (
     target?.closest(".popover") ||
     target?.closest(
-      "#appearance-btn,#settings-btn,.node-more,#item-context-menu",
+      "#appearance-btn,#settings-btn,.node-more,.connector,#item-context-menu,#connection-mode-menu",
     )
   )
     return;
   $$(".popover").forEach((popover) => (popover.hidden = true));
   $("#item-context-menu").hidden = true;
+  $("#connection-mode-menu").hidden = true;
 }
 document.addEventListener("pointerdown", closeFloatingPanels, true);
+$$("[data-connection-mode]").forEach((button) => {
+  button.onclick = () => {
+    connectionMode = button.dataset.connectionMode;
+    $("#connection-mode-menu").hidden = true;
+    showToast(
+      connectionMode === "draw"
+        ? "Bağlantı noktasından diğer öğeye çiz"
+        : "Bağlantı noktasını diğer öğeye sürükle",
+    );
+  };
+});
 $("#item-dialog").addEventListener("pointerdown", (event) => {
   const form = $("#item-form");
   const rect = form.getBoundingClientRect();
