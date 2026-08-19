@@ -639,23 +639,25 @@
       <label
         >Etiket<input id="edge-label" placeholder="örn. destekler"
       /></label>
-      <fieldset>
-        <legend>Yön</legend>
-        <div id="edge-direction" class="segmented">
-          <button data-direction="none">—</button
-          ><button data-direction="forward">→</button
-          ><button data-direction="backward">←</button
-          ><button data-direction="both">↔</button>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Çizgi</legend>
-        <div id="edge-line-style" class="segmented">
-          <button data-style="solid">Düz</button
-          ><button data-style="dashed">Kesik</button
-          ><button data-style="dotted">Nokta</button>
-        </div>
-      </fieldset>
+      <div class="edge-quick-grid">
+        <fieldset>
+          <legend>Yön</legend>
+          <div id="edge-direction" class="segmented">
+            <button data-direction="none">—</button
+            ><button data-direction="forward">→</button
+            ><button data-direction="backward">←</button
+            ><button data-direction="both">↔</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Çizgi</legend>
+          <div id="edge-line-style" class="segmented">
+            <button data-style="solid">Düz</button
+            ><button data-style="dashed">Kesik</button
+            ><button data-style="dotted">Nokta</button>
+          </div>
+        </fieldset>
+      </div>
       <fieldset>
         <legend>Form</legend>
         <div id="edge-path-style" class="segmented">
@@ -699,7 +701,54 @@
           </button>
         </div>
       </fieldset>
-      <label>Ok rengi<input id="edge-color" type="color" /></label>
+      <fieldset class="edge-color-field">
+        <legend>Renk</legend>
+        <div id="edge-color-presets" class="edge-color-presets">
+          <button
+            data-color="#292722"
+            style="--swatch: #292722"
+            aria-label="Siyah"
+          ></button>
+          <button
+            data-color="#64748b"
+            style="--swatch: #64748b"
+            aria-label="Gri"
+          ></button>
+          <button
+            data-color="#dc5a47"
+            style="--swatch: #dc5a47"
+            aria-label="Mercan"
+          ></button>
+          <button
+            data-color="#d6922f"
+            style="--swatch: #d6922f"
+            aria-label="Kehribar"
+          ></button>
+          <button
+            data-color="#4f8a68"
+            style="--swatch: #4f8a68"
+            aria-label="Yeşil"
+          ></button>
+          <button
+            data-color="#477cb5"
+            style="--swatch: #477cb5"
+            aria-label="Mavi"
+          ></button>
+          <button
+            data-color="#8066b3"
+            style="--swatch: #8066b3"
+            aria-label="Mor"
+          ></button>
+          <button
+            data-color="#c45f8c"
+            style="--swatch: #c45f8c"
+            aria-label="Pembe"
+          ></button>
+          <label class="edge-custom-color" title="Özel renk"
+            ><input id="edge-color" type="color" /><span>+</span></label
+          >
+        </div>
+      </fieldset>
       <label
         >Çizgi kalınlığı <output id="edge-width-output">2px</output
         ><input id="edge-width" type="range" min="1" max="8" step="0.5"

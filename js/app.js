@@ -975,9 +975,16 @@ function renderEdges() {
 }
 function syncEdgePopover(edge) {
   $("#edge-label").value = edge.label || "";
-  $("#edge-color").value = edge.color;
+  const edgeColor = edge.color || map().appearance.arrowColor;
+  $("#edge-color").value = edgeColor;
   $("#edge-width").value = edge.width || 2;
   $("#edge-width-output").value = `${edge.width || 2}px`;
+  $$("#edge-color-presets button").forEach((button) =>
+    button.classList.toggle(
+      "active",
+      button.dataset.color.toLowerCase() === edgeColor.toLowerCase(),
+    ),
+  );
   $$("#edge-direction button").forEach((b) =>
     b.classList.toggle("active", b.dataset.direction === edge.direction),
   );
@@ -1916,6 +1923,9 @@ function updateSelectedEdge(key, value) {
 $("#edge-label").onchange = (e) =>
   updateSelectedEdge("label", e.target.value.trim());
 $("#edge-color").onchange = (e) => updateSelectedEdge("color", e.target.value);
+$$("#edge-color-presets button").forEach((button) => {
+  button.onclick = () => updateSelectedEdge("color", button.dataset.color);
+});
 $("#edge-width").onpointerdown = () => snapshot();
 $("#edge-width").oninput = (event) => {
   const edge = map().edges.find((item) => item.id === selectedEdgeId);

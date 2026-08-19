@@ -34,6 +34,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Bağlantı noktasındaki iki butondan otomatik ya da fare/kalem/dokunmayla çizilen bağlantı seçimi
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
 - Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
+- Minimal bağlantı panelinde sekiz hazır ok rengi ve özel renk seçici
 - Itemlerin üzerinden serbestçe geçebilen bağlantılar
 - Canlı SVG önizlemeli; düzeltilmiş dalga ve döngü ile yay, hilal ve zikzak arrow yolları
 - Rich text için sarı, mavi, yeşil ve pembe mark renkleri

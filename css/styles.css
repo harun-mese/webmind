@@ -591,7 +591,83 @@ button {
   top: 61px;
 }
 .edge-popover {
-  width: 300px;
+  width: 276px;
+  max-height: min(620px, calc(100vh - 24px));
+  padding: 12px;
+  overflow: auto;
+}
+.edge-popover .popover-title {
+  padding-bottom: 8px;
+}
+.edge-popover > label {
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+.edge-popover input[type="text"] {
+  min-height: 34px;
+  padding: 7px 9px;
+}
+.edge-quick-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 8px;
+}
+.edge-popover .edge-quick-grid fieldset {
+  margin-bottom: 10px;
+}
+.edge-popover .segmented button {
+  min-height: 30px;
+  padding: 4px 5px;
+  font-size: 10px;
+}
+.edge-color-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.edge-color-presets button,
+.edge-custom-color {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  outline: 1px solid color-mix(in srgb, var(--ink), transparent 78%);
+  background: var(--swatch);
+}
+.edge-color-presets button.active {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+.edge-custom-color {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background: conic-gradient(
+    #ef6461,
+    #eab75d,
+    #71ad7d,
+    #5c8fd0,
+    #9b72cf,
+    #ef6461
+  );
+  cursor: pointer;
+  font:
+    700 15px/1 system-ui,
+    sans-serif;
+}
+.edge-custom-color input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+}
+.edge-custom-color span {
+  text-shadow: 0 1px 3px #000;
 }
 .popover-title {
   padding: 0 0 12px;
@@ -3008,15 +3084,15 @@ button > svg,
 
 #edge-path-style {
   grid-auto-flow: row;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
   overflow: visible;
   border: 0;
 }
 #edge-path-style button {
   display: grid;
-  min-height: 58px;
-  padding: 6px 8px;
+  min-height: 45px;
+  padding: 4px;
   border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 10px;
@@ -3026,7 +3102,7 @@ button > svg,
 }
 #edge-path-style button svg {
   width: 100%;
-  height: 27px;
+  height: 21px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
