@@ -362,8 +362,12 @@ function renderNodes() {
     }
     const subtitle = el.querySelector(".node-subtitle");
     if (!subtitle.isContentEditable) {
-      if (n.subtitleHtml) subtitle.innerHTML = sanitizeRichText(n.subtitleHtml);
-      else subtitle.textContent = n.subtitle || "";
+      const hasSubtitle = Boolean((n.subtitle || "").trim());
+      subtitle.classList.toggle("has-subtitle", hasSubtitle);
+      if (!hasSubtitle) subtitle.replaceChildren();
+      else if (n.subtitleHtml)
+        subtitle.innerHTML = sanitizeRichText(n.subtitleHtml);
+      else subtitle.textContent = n.subtitle;
     }
     el.querySelector(".connector").ariaLabel =
       `${n.title || "Başlıksız öğe"} öğesinden bağlantı oluştur`;

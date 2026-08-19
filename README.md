@@ -29,6 +29,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Ayrı dairesel kontrollerden oluşan şeffaf ve minimal araç çubuğu
 - Düğüm başlığını çift tıklayarak düzenleme ve düğümleri sürükleme
 - Metne göre büyüyen, maksimum genişliği sınırlı metin kartları ve başlık hizalama
+- Alt başlığı boş olan metin öğelerinde fazladan satır veya boşluk göstermeyen yerleşim
 - Metin kartlarında sürüklenebilir genişlik tutamacı; medya kartlarında small, medium ve large boyutları
 - Düğümler arasında yönlü, yönsüz veya çift yönlü SVG bağlantılar
 - Bağlantı noktasındaki iki butondan otomatik ya da fare/kalem/dokunmayla çizilen bağlantı seçimi
