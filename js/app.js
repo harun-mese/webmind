@@ -848,7 +848,7 @@ function renderEdges() {
         : edge.lineStyle === "dotted"
           ? "2 7"
           : "";
-    g.innerHTML = `<path class="edge-hit" d="${p}"/><path class="edge-visible" d="${p}" style="--edge-color:${edge.color};--edge-width:${edge.width || 2};stroke-dasharray:${dash}" ${["forward", "both"].includes(edge.direction) ? 'marker-end="url(#arrow-end)"' : ""} ${["backward", "both"].includes(edge.direction) ? 'marker-start="url(#arrow-start)"' : ""}/>`;
+    g.innerHTML = `<path class="edge-hit" d="${p}"/><path class="edge-sketch" d="${p}" style="--edge-color:${edge.color};--edge-width:${edge.width || 2};stroke-dasharray:${dash}"/><path class="edge-visible" d="${p}" style="--edge-color:${edge.color};--edge-width:${edge.width || 2};stroke-dasharray:${dash}" ${["forward", "both"].includes(edge.direction) ? 'marker-end="url(#arrow-end)"' : ""} ${["backward", "both"].includes(edge.direction) ? 'marker-start="url(#arrow-start)"' : ""}/>`;
     g.addEventListener("click", (e) => {
       e.stopPropagation();
       selectEdge(edge.id, e.clientX, e.clientY);

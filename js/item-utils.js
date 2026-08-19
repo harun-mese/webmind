@@ -143,17 +143,18 @@ export function buildEdgePath(source, target, style = "curved") {
     const middleY = (y1 + y2) / 2;
     const radius = Math.min(72, Math.max(30, pathDistance * 0.2));
     const kappa = radius * 0.5523;
-    const exitHandle = Math.min(54, pathDistance * 0.2);
     const point = (along, normal) => ({
       x: round(middleX + unitX * along + normalX * normal),
       y: round(middleY + unitY * along + normalY * normal),
     });
-    const left = point(-radius, 0);
-    const top = point(0, radius);
-    const right = point(radius, 0);
-    const bottom = point(0, -radius);
+    // The loop sits above the connector and touches its baseline tangentially.
+    // Leads therefore never cut across the ring, matching a hand-drawn loop.
+    const junction = point(0, 0);
+    const right = point(radius, radius);
+    const top = point(0, radius * 2);
+    const left = point(-radius, radius);
     const coordinate = (value) => `${value.x},${value.y}`;
-    return `M${x1},${y1} L${coordinate(left)} C${coordinate(point(-radius, kappa))} ${coordinate(point(-kappa, radius))} ${coordinate(top)} C${coordinate(point(kappa, radius))} ${coordinate(point(radius, kappa))} ${coordinate(right)} C${coordinate(point(radius, -kappa))} ${coordinate(point(kappa, -radius))} ${coordinate(bottom)} C${coordinate(point(-kappa * 0.25, -radius))} ${round(x2 - unitX * exitHandle)},${round(y2 - unitY * exitHandle)} ${x2},${y2}`;
+    return `M${x1},${y1} C${coordinate(point(-radius, 0))} ${coordinate(point(-kappa, 0))} ${coordinate(junction)} C${coordinate(point(kappa, 0))} ${coordinate(point(radius, radius - kappa))} ${coordinate(right)} C${coordinate(point(radius, radius + kappa))} ${coordinate(point(kappa, radius * 2))} ${coordinate(top)} C${coordinate(point(-kappa, radius * 2))} ${coordinate(point(-radius, radius + kappa))} ${coordinate(left)} C${coordinate(point(-radius, radius - kappa))} ${coordinate(point(-kappa, 0))} ${coordinate(junction)} C${coordinate(point(kappa, 0))} ${round(x2 - unitX * radius)},${round(y2 - unitY * radius)} ${x2},${y2}`;
   }
   if (horizontal) {
     const middleX = round((x1 + x2) / 2);

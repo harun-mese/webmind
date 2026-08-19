@@ -139,7 +139,7 @@ test("decorative edge paths keep directional endpoints", () => {
   const curved = buildEdgePath(source, target, "curved");
   const zigzag = buildEdgePath(source, target, "zigzag");
   assert.ok((wavy.match(/ C/g) || []).length >= 3);
-  assert.equal((loop.match(/ C/g) || []).length, 4);
+  assert.equal((loop.match(/ C/g) || []).length, 6);
   assert.equal((arc.match(/ C/g) || []).length, 1);
   assert.equal((crescent.match(/ C/g) || []).length, 3);
   assert.equal((curved.match(/ C/g) || []).length, 1);

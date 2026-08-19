@@ -344,6 +344,15 @@ button {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+.edge-sketch {
+  fill: none;
+  stroke: var(--edge-color, var(--arrow));
+  stroke-width: calc(var(--edge-width, 2) + 1.4px);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.16;
+  transform: translate(0.55px, 0.45px);
+}
 .edge-hit {
   fill: none;
   stroke: transparent;
