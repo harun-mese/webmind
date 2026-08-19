@@ -119,15 +119,18 @@ export function buildEdgePath(source, target, style = "curved") {
     return `${path} L${round(x2 - unitX * finalLead)},${round(y2 - unitY * finalLead)} L${x2},${y2}`;
   }
   if (style === "arc" || style === "crescent") {
-    const amplitude = Math.min(
-      style === "crescent" ? 105 : 82,
-      Math.max(style === "crescent" ? 45 : 30, pathDistance * 0.3),
-    );
+    const amplitude = Math.min(105, Math.max(42, pathDistance * 0.3));
     const handle = Math.min(54, pathDistance * 0.2);
     if (style === "arc") {
-      const middleX = round((x1 + x2) / 2 + normalX * amplitude);
-      const middleY = round((y1 + y2) / 2 + normalY * amplitude);
-      return `M${x1},${y1} C${round(x1 + unitX * handle)},${round(y1 + unitY * handle)} ${round(middleX - unitX * handle)},${round(middleY - unitY * handle)} ${middleX},${middleY} C${round(middleX + unitX * handle)},${round(middleY + unitY * handle)} ${round(x2 - unitX * handle)},${round(y2 - unitY * handle)} ${x2},${y2}`;
+      const control1X = round(
+        x1 + unitX * pathDistance * 0.28 + normalX * amplitude,
+      );
+      const control1Y = round(
+        y1 + unitY * pathDistance * 0.28 + normalY * amplitude,
+      );
+      const control2X = round(x2 - unitX * handle);
+      const control2Y = round(y2 - unitY * handle);
+      return `M${x1},${y1} C${control1X},${control1Y} ${control2X},${control2Y} ${x2},${y2}`;
     }
     const firstX = round(x1 + (x2 - x1) * 0.36 + normalX * amplitude);
     const firstY = round(y1 + (y2 - y1) * 0.36 + normalY * amplitude);
@@ -140,6 +143,7 @@ export function buildEdgePath(source, target, style = "curved") {
     const middleY = (y1 + y2) / 2;
     const radius = Math.min(72, Math.max(30, pathDistance * 0.2));
     const kappa = radius * 0.5523;
+    const exitHandle = Math.min(54, pathDistance * 0.2);
     const point = (along, normal) => ({
       x: round(middleX + unitX * along + normalX * normal),
       y: round(middleY + unitY * along + normalY * normal),
@@ -149,22 +153,16 @@ export function buildEdgePath(source, target, style = "curved") {
     const right = point(radius, 0);
     const bottom = point(0, -radius);
     const coordinate = (value) => `${value.x},${value.y}`;
-    return `M${x1},${y1} L${coordinate(left)} C${coordinate(point(-radius, kappa))} ${coordinate(point(-kappa, radius))} ${coordinate(top)} C${coordinate(point(kappa, radius))} ${coordinate(point(radius, kappa))} ${coordinate(right)} C${coordinate(point(radius, -kappa))} ${coordinate(point(kappa, -radius))} ${coordinate(bottom)} C${coordinate(point(-kappa, -radius))} ${coordinate(point(-radius, -kappa))} ${coordinate(left)} L${x2},${y2}`;
+    return `M${x1},${y1} L${coordinate(left)} C${coordinate(point(-radius, kappa))} ${coordinate(point(-kappa, radius))} ${coordinate(top)} C${coordinate(point(kappa, radius))} ${coordinate(point(radius, kappa))} ${coordinate(right)} C${coordinate(point(radius, -kappa))} ${coordinate(point(kappa, -radius))} ${coordinate(bottom)} C${coordinate(point(-kappa * 0.25, -radius))} ${round(x2 - unitX * exitHandle)},${round(y2 - unitY * exitHandle)} ${x2},${y2}`;
   }
-  const travel = Math.min(110, Math.max(24, pathDistance * 0.34));
-  const curve = Math.min(72, Math.max(0, pathDistance * 0.16));
-  const middleX = round((x1 + x2) / 2 + normalX * curve);
-  const middleY = round((y1 + y2) / 2 + normalY * curve);
-  const middleHandle = Math.min(48, travel * 0.45);
-  const control1X = round(x1 + unitX * travel);
-  const control1Y = round(y1 + unitY * travel);
-  const middleInX = round(middleX - unitX * middleHandle);
-  const middleInY = round(middleY - unitY * middleHandle);
-  const middleOutX = round(middleX + unitX * middleHandle);
-  const middleOutY = round(middleY + unitY * middleHandle);
-  const control2X = round(x2 - unitX * travel);
-  const control2Y = round(y2 - unitY * travel);
-  return `M${x1},${y1} C${control1X},${control1Y} ${middleInX},${middleInY} ${middleX},${middleY} C${middleOutX},${middleOutY} ${control2X},${control2Y} ${x2},${y2}`;
+  if (horizontal) {
+    const middleX = round((x1 + x2) / 2);
+    const lead = Math.min(64, pathDistance * 0.32);
+    return `M${x1},${y1} C${middleX},${y1} ${round(x2 - unitX * lead)},${round(y2 - unitY * lead)} ${x2},${y2}`;
+  }
+  const middleY = round((y1 + y2) / 2);
+  const lead = Math.min(64, pathDistance * 0.32);
+  return `M${x1},${y1} C${x1},${middleY} ${round(x2 - unitX * lead)},${round(y2 - unitY * lead)} ${x2},${y2}`;
 }
 
 export function readableInk(hexColor) {

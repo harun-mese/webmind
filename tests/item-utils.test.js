@@ -101,14 +101,8 @@ test("curved edges expose a directional tangent for arrow markers", () => {
     { type: "text", x: 0, y: 200 },
     { type: "text", x: 0, y: 0 },
   );
-  assert.equal(
-    down,
-    "M78,74 C78,112.76 59.76,113.56 59.76,131 C59.76,148.44 78,149.24 78,188",
-  );
-  assert.equal(
-    up,
-    "M78,188 C78,149.24 96.24,148.44 96.24,131 C96.24,113.56 78,112.76 78,74",
-  );
+  assert.equal(down, "M78,74 C78,131 78,151.52 78,188");
+  assert.equal(up, "M78,188 C78,131 78,110.48 78,74");
 
   const diagonal = buildEdgePath(
     { type: "text", x: 0, y: 0 },
@@ -142,11 +136,14 @@ test("decorative edge paths keep directional endpoints", () => {
   const loop = buildEdgePath(source, target, "loop");
   const arc = buildEdgePath(source, target, "arc");
   const crescent = buildEdgePath(source, target, "crescent");
+  const curved = buildEdgePath(source, target, "curved");
   const zigzag = buildEdgePath(source, target, "zigzag");
   assert.ok((wavy.match(/ C/g) || []).length >= 3);
   assert.equal((loop.match(/ C/g) || []).length, 4);
-  assert.equal((arc.match(/ C/g) || []).length, 2);
+  assert.equal((arc.match(/ C/g) || []).length, 1);
   assert.equal((crescent.match(/ C/g) || []).length, 3);
+  assert.equal((curved.match(/ C/g) || []).length, 1);
+  assert.notEqual(arc, crescent);
   assert.ok((zigzag.match(/ L/g) || []).length >= 4);
   for (const path of [wavy, loop, arc, crescent, zigzag]) {
     const values = path.match(/-?\d+(?:\.\d+)?/g).map(Number);
