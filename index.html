@@ -656,14 +656,44 @@
       <fieldset>
         <legend>Form</legend>
         <div id="edge-path-style" class="segmented">
-          <button data-path="curved">Kavis</button
-          ><button data-path="straight">Doğru</button
-          ><button data-path="elbow">Dirsek</button
-          ><button data-path="wavy">Dalga</button
-          ><button data-path="loop">Halka</button
-          ><button data-path="arc">Yay</button
-          ><button data-path="crescent">Hilal</button
-          ><button data-path="zigzag">Zikzak</button>
+          <button data-path="curved">
+            <svg viewBox="0 0 64 24"><path d="M2 19 C18 19 43 5 62 5" /></svg
+            ><span>Kavis</span>
+          </button>
+          <button data-path="straight">
+            <svg viewBox="0 0 64 24"><path d="M2 12 L62 12" /></svg
+            ><span>Doğru</span>
+          </button>
+          <button data-path="elbow">
+            <svg viewBox="0 0 64 24"><path d="M2 19 H31 V5 H62" /></svg
+            ><span>Dirsek</span>
+          </button>
+          <button data-path="wavy">
+            <svg viewBox="0 0 64 24">
+              <path d="M2 12 C8 2 14 22 20 12 S32 2 38 12 S50 22 62 12" /></svg
+            ><span>Dalga</span>
+          </button>
+          <button data-path="loop">
+            <svg viewBox="0 0 64 24">
+              <path
+                d="M2 12 H22 C22 2 42 2 42 12 C42 22 22 22 22 12 H62"
+              /></svg
+            ><span>Döngü</span>
+          </button>
+          <button data-path="arc">
+            <svg viewBox="0 0 64 24"><path d="M2 20 Q32 -2 62 20" /></svg
+            ><span>Yay</span>
+          </button>
+          <button data-path="crescent">
+            <svg viewBox="0 0 64 24">
+              <path d="M2 19 C17 0 31 2 38 11 S52 20 62 5" /></svg
+            ><span>Hilal</span>
+          </button>
+          <button data-path="zigzag">
+            <svg viewBox="0 0 64 24">
+              <path d="M2 18 L14 5 L26 18 L38 5 L50 18 L62 5" /></svg
+            ><span>Zikzak</span>
+          </button>
         </div>
       </fieldset>
       <label>Ok rengi<input id="edge-color" type="color" /></label>

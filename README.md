@@ -34,7 +34,7 @@ Tarayıcıda çalışan, çevrimdışı kullanılabilen ve verileri cihazda sakl
 - Kavisli, düz ve dirsekli; kesintisiz, kesikli ve noktalı bağlantı stilleri
 - Kavis korunurken hedef itemin merkezine yönelen ok uçları ve bağlantı kalınlığı ayarı
 - Itemlerin üzerinden serbestçe geçebilen bağlantılar
-- Düzeltilmiş dalga ve halka ile yay, hilal ve zikzak dekoratif arrow yolları
+- Canlı SVG önizlemeli; düzeltilmiş dalga ve döngü ile yay, hilal ve zikzak arrow yolları
 - Rich text için sarı, mavi, yeşil ve pembe mark renkleri
 - Noktalı, kareli, çizgili veya boş canvas deseni ve özelleştirilebilir renkler
 - Her öğe için yumuşak kart, yapışkan not, çizgisel veya cam görünüm stili
